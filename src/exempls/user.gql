@@ -1,0 +1,33 @@
+mutation {
+	createUserResolver(
+		data: {
+			email: "test25a@test.com"
+			password: "Teste25@"
+			name: "Jaison Manders"
+		}
+	) {
+		field
+		message
+	}
+}
+query {
+	LoginAuthUser(data: { email: "test25ac@test.com", password: "Teste25@" }) {
+		field
+		message
+	}
+}
+mutation {
+	updateAuthPassword(
+		data: { oldPassword: "Teste25@", password: "Teste24@" }
+	) {
+		field
+		message
+	}
+}
+query {
+	allUsers {
+		email
+		name
+		password
+	}
+}

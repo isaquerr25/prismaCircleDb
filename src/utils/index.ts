@@ -79,7 +79,7 @@ export const decodeToken = (token:string) => {
 };
 
 interface JwtPayload {
-	id: number;
+	userId: number;
 }
 export const getTokenId = (ctx: any) => {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars

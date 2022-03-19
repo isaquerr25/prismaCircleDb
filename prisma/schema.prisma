@@ -9,16 +9,60 @@ datasource db {
 
 model User {
 
-		id            Int       @id @default(autoincrement())
-		email         String    @unique
-		name          String?
-		password      String
-		wallet        String?
-		createdAt     DateTime  @default(now())
-		updatedAt     DateTime  @updatedAt
-		cash          Decimal?  @default(0)
-		state         String?
-		affiliated    User?     @relation("AffiliatedHistory", fields: [affiliatedId], references: [id])
-		affiliatedId  Int?
-		indicated     User?     @relation("AffiliatedHistory")
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  name         String?
+  password     String
+  wallet       String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  cash         BigInt?       @default(0)
+  state        String?
+  affiliated   User?         @relation("AffiliatedHistory", fields: [affiliatedId], references: [id])
+  affiliatedId Int?          @unique
+  indicated    User[]        @relation("AffiliatedHistory")
+  transactions Transaction[] @relation("UserTransaction")
+  cycles       Cycle[]       @relation("UserCycle ")
+}
+
+model Transaction {
+
+  id        Int      @id @default(autoincrement())
+  action    String
+  value     BigInt
+  hash      String?
+  state     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  wallet    String
+  user      User     @relation("UserTransaction", fields: [userId], references: [id])
+  userId    Int
+}
+
+model Cycle {
+
+  id            Int      @id @default(autoincrement())
+  action        String
+  valueUSD      Int
+  valueBTC      BigInt
+  finalValueUSD Int?
+  finalValueBTC BigInt?
+  state         String
+  beginDate     DateTime
+  finishDate    DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation("UserCycle ", fields: [userId], references: [id])
+  userId        Int
+
+}
+
+model MonthlyProfit {
+
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  finishDate DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  profit     Int
+
 }

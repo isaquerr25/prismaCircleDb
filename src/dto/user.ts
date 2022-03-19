@@ -9,6 +9,9 @@ export class UserAll {
 		name?: string | null;
 	@Field((type) => String, { nullable: true })
 		password?: string | null;
+	@Field((type) => String, { nullable: true })
+		wallet?: string | null;
+
 }
 
 @InputType()
@@ -37,4 +40,9 @@ export class PasswordAlter {
 		oldPassword!: string;
 	@Field(() => String)
 		password!: string;
+}
+@InputType()
+export class WalletAlter {
+	@Field(() => String)
+		wallet!: string;
 }

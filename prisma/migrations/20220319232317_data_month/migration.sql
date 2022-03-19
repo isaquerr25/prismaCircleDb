@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "MonthlyProfit" ADD COLUMN     "finishDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

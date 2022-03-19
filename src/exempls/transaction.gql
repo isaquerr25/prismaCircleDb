@@ -1,0 +1,61 @@
+mutation{
+  createTransaction(data:{
+    action:"withdraw"
+    value:100085
+    state:"progress"
+    wallet:"dausdnuwenfqweuf234u12389"
+    userId:0
+  }){
+    field
+    message
+  }
+}
+
+query{
+  allTransactionsByUser{
+    id
+    value
+    hash
+    action
+    wallet
+    createdAt
+    updatedAt
+    state
+  }
+}
+
+query{
+  allTransactions{
+    id
+    value
+    hash
+    action
+    wallet
+    createdAt
+    updatedAt
+    state
+  }
+}
+
+mutation{
+  updateTransaction(data:{
+    id:2
+    state:"revoked"
+    action:""
+    value:""
+    hash:""
+    wallet:""
+  }){
+    field
+    message
+  }
+}
+
+mutation{
+  deleteTransaction(data:{
+    id:1
+  }){
+    field
+    message
+  }
+}

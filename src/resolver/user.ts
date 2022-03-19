@@ -1,10 +1,11 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { Resolver, Query, Mutation, Arg, Ctx } from 'type-graphql';
-import { CreateUser, LoginUser, PasswordAlter, UserAll } from '../dto/user';
 import { GraphState } from '../dto/utils';
+import { CreateUser, LoginUser, PasswordAlter, UserAll, WalletAlter } from '../dto/user';
 import { getTokenId, HashGenerator, validateCreateUser, validateLogin, validatePassword } from '../utils';
-const prisma = new PrismaClient();
+import { validate } from 'bitcoin-address-validation';
+export const prisma = new PrismaClient();
 
 @Resolver()
 export class UserResolver {
@@ -105,31 +106,31 @@ export class UserResolver {
 		return newValidateUser;
 	}
 
-	@Mutation(() => [GraphState], { nullable: true })
+	@Mutation(() => GraphState, { nullable: true })
 	async updateAuthPassword(
 		@Arg('data', () => PasswordAlter) data: PasswordAlter,
 		@Ctx() ctx: any	)
 	{
-		const newValidateUser: GraphState[] = [];
+		let newValidateUser = {};
 
-		const currentToken = getTokenId(ctx)?.id;
+		const currentToken = getTokenId(ctx)?.userId;
 		const newUser = await prisma.user.findFirst({
 			where: { id: currentToken },
 		});
 		if (!currentToken || !newUser){
-			newValidateUser.push({
+			newValidateUser = {
 				field: 'password',
 				message: 'Account not exist',
-			});
+			};
 			return newValidateUser;
 		}
 		if (validatePassword(data.oldPassword)) {
 			console.log('asd');
 			if (data.password == data.oldPassword) {
-				newValidateUser.push({
+				newValidateUser = {
 					field: 'password',
 					message: 'The old password is same new password',
-				});
+				};
 				return newValidateUser;
 			}
 			if (currentToken != null) {
@@ -164,5 +165,54 @@ export class UserResolver {
 			};
 		}
 		return { field: 'old password', message: '404' };
+	}
+
+	@Mutation(() => GraphState, { nullable: true })
+	async updateWallet(
+		@Arg('data', () => WalletAlter) data: WalletAlter,
+		@Ctx() ctx: any	)
+	{
+		let newValidateUser = {};
+		const currentToken = getTokenId(ctx)?.userId;
+		const newUser = await prisma.user.findFirst({
+			where: { id: currentToken },
+		});
+		if (!currentToken || !newUser){
+			newValidateUser = {
+				field: 'account',
+				message: 'Account not exist',
+			};
+			return newValidateUser;
+		}
+
+		const validWallet =validate(data.wallet);
+
+		if (validWallet) {
+			console.log('asd');
+			if (currentToken != null) {
+				console.log('await');
+				try {
+
+					await prisma.user.update({
+						where: { id: currentToken },
+						data: { wallet: data.wallet },
+					});
+
+					return { field: 'success', message: 'change wallet' };
+
+				} catch (errors) {
+
+					return { field: 'wallet', message: errors };
+				}
+			}
+			else {
+				return { field: 'Server', message: 'Do not have access' };
+			}
+		} else {
+			return {
+				field: 'wallet',
+				message:'wallet invalid, try another wallet',
+			};
+		}
 	}
 }

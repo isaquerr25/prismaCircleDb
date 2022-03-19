@@ -1,0 +1,40 @@
+mutation{
+  createMonthlyProfit(data:{
+    profit:4
+    finishDate:"2015-12-03T10:15:30.000Z"
+  }){
+    field
+    message
+  }
+}
+
+query{
+  allMonthlyProfit{
+    id
+    finishDate
+    createdAt
+    updatedAt
+    profit
+  }
+}
+
+mutation{
+  updateMonthlyProfit(data:{
+    id:2
+    profit:15
+    finishDate:"2022-03-19T23:18:06.957Z"
+  }){
+    field
+    message
+  }
+}
+
+
+mutation{
+  deleteMonthlyProfit(data:{
+    id:2
+  }){
+    field
+    message
+  }
+}

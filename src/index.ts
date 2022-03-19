@@ -6,6 +6,9 @@ import cors from 'cors';
 import cookieParser = require('cookie-parser');
 import { ApolloServer } from 'apollo-server-express';
 import { UserResolver } from './resolver/user';
+import { TransactionResolver } from './resolver/transaction';
+import { CycleResolver } from './resolver/cycle';
+import { MonthlyProfitResolver } from './resolver/monthlyProfit';
 
 
 (async () => {
@@ -20,7 +23,7 @@ import { UserResolver } from './resolver/user';
 	app.use(cors(corsOptions));
 
 	const schema = await buildSchema({
-		resolvers: [UserResolver], // add this
+		resolvers: [UserResolver,TransactionResolver,CycleResolver,MonthlyProfitResolver], // add this
 	});
 
 	const server = new ApolloServer({

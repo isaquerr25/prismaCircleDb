@@ -62,7 +62,7 @@ export class UserResolver {
 	}
 
 	@Query(() => [GraphState])
-	async LoginAuthUser(
+	async loginAuthUser(
 		@Arg('data', () => LoginUser) data: LoginUser,
 		@Ctx() ctx: any
 	) {

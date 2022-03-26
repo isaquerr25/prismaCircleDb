@@ -11,7 +11,7 @@ mutation {
 	}
 }
 query {
-	LoginAuthUser(data: { email: "test25ac@test.com", password: "Teste25@" }) {
+	loginAuthUser(data: { email: "test25ac@test.com", password: "Teste25@" }) {
 		field
 		message
 	}

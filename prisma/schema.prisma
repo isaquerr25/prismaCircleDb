@@ -7,22 +7,34 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  MANAGER
+  DEVELOPER
+  TESTER
+  GUEST
+}
+
 model User {
 
-  id           Int           @id @default(autoincrement())
-  email        String        @unique
-  name         String?
-  password     String
-  wallet       String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  cash         BigInt?       @default(0)
-  state        String?
-  affiliated   User?         @relation("AffiliatedHistory", fields: [affiliatedId], references: [id])
-  affiliatedId Int?          @unique
-  indicated    User[]        @relation("AffiliatedHistory")
-  transactions Transaction[] @relation("UserTransaction")
-  cycles       Cycle[]       @relation("UserCycle ")
+  id             Int           @id @default(autoincrement())
+  email          String        @unique
+  name           String?
+  password       String
+  wallet         String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  cash           BigInt?       @default(0)
+  state          String?
+  affiliated     User?         @relation("AffiliatedHistory", fields: [affiliatedId], references: [id])
+  affiliatedId   Int?          @unique
+  indicated      User[]        @relation("AffiliatedHistory")
+  transactions   Transaction[] @relation("UserTransaction")
+  cycles         Cycle[]       @relation("UserCycle ")
+  role           Role          @default(GUEST)
+  profilePicture String?
+
+  Document Document[] @relation("UserDocument")
 }
 
 model Transaction {
@@ -65,4 +77,20 @@ model MonthlyProfit {
   updatedAt  DateTime @updatedAt
   profit     Int
 
+}
+
+enum DocumentRole {
+  INVALID
+  VALID
+  PROCESS
+}
+
+model Document {
+  id        Int          @id @default(autoincrement())
+  state     DocumentRole @default(PROCESS)
+  fileName  String
+  user      User         @relation("UserDocument", fields: [userId], references: [id])
+  userId    Int
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 }

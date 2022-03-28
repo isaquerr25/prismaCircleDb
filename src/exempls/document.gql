@@ -1,0 +1,9 @@
+query {
+	allDocuments {
+		id
+		state
+		fileName
+		createdAt
+		updatedAt
+	}
+}

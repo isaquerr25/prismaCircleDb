@@ -1,5 +1,5 @@
 import { ObjectType, Field, InputType } from 'type-graphql';
-
+import { Stream } from 'stream';
 @ObjectType()
 export class GraphState {
 	@Field(() => String, { nullable: true })

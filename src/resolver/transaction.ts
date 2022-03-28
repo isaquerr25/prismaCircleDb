@@ -23,7 +23,7 @@ export class TransactionResolver {
 		const stateReturn = [];
 		const idValid = getTokenId(ctx)?.userId;
 
-		if (!await prisma.user.findFirst({ where: { id: idValid } })) {
+		if (!await prisma.user.findFirst({ where: { id: idValid } }) || idValid == null) {
 			stateReturn.push({
 				field: 'error',
 				message: 'this user not exists',
@@ -91,7 +91,7 @@ export class TransactionResolver {
 		const stateReturn = [];
 		const idValid = getTokenId(ctx)?.userId;
 
-		if (!await prisma.user.findFirst({ where: { id: idValid } })) {
+		if (!await prisma.user.findFirst({ where: { id: idValid } }) || idValid == null) {
 			stateReturn.push({
 				field: 'error',
 				message: 'this user not exists',
@@ -140,7 +140,7 @@ export class TransactionResolver {
 		const stateReturn = [];
 		const idValid = getTokenId(ctx)?.userId;
 
-		if (!await prisma.user.findFirst({ where: { id: idValid } })) {
+		if (!await prisma.user.findFirst({ where: { id: idValid } }) || idValid == null) {
 			stateReturn.push({
 				field: 'error',
 				message: 'this user not exists',

@@ -10,16 +10,8 @@ mutation {
 		message
 	}
 }
-query {
-	loginAuthUser(data: { email: "test25ac@test.com", password: "Teste25@" }) {
-		field
-		message
-	}
-}
 mutation {
-	updateAuthPassword(
-		data: { oldPassword: "Teste25@", password: "Teste24@" }
-	) {
+	loginAuthUser(data: { email: "test25ac@test.com", password: "Teste25@" }) {
 		field
 		message
 	}

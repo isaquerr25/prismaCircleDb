@@ -2,11 +2,17 @@ import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { Resolver, Query, Mutation, Arg, Ctx } from 'type-graphql';
 import { GraphState } from '../dto/utils';
-import { CreateUser, LoginUser, PasswordAlter, UserAll, WalletAlter } from '../dto/user';
+import { CreateUser, LoginUser, PasswordAlter, UserAll, UserHaveComponents, WalletAlter } from '../dto/user';
 import { getTokenId, HashGenerator, validateCreateUser, validateLogin, validatePassword } from '../utils';
 import { validate } from 'bitcoin-address-validation';
 export const prisma = new PrismaClient();
 
+
+enum DocumentRole {
+  'INVALID',
+  'PROCESS',
+  'VALID',
+}
 @Resolver()
 export class UserResolver {
 	@Query(() => [UserAll], { nullable: true })
@@ -14,9 +20,38 @@ export class UserResolver {
 		return prisma.user.findMany();
 	}
 
-	@Query(() => UserAll, { nullable: true })
-	async changePasswordUser() {
-		return prisma.user.findMany();
+	@Query(() => UserHaveComponents, { nullable: true })
+	async userInfoDocument(@Ctx() ctx: any) {
+
+		const validStateDocument = {INVALID:0,PROCESS:1,VALID:2};
+
+		const currentToken = getTokenId(ctx)?.userId;
+
+		if(currentToken){
+			const groupDoc = prisma.document.findMany({where: { userId: currentToken }});
+			if(!groupDoc){
+
+				return prisma.user.findFirst({where: { id: currentToken }});
+			}
+			let betterState = -1;
+			for(const g of await groupDoc){
+
+				if(validStateDocument[g.state] > betterState){
+					betterState = validStateDocument[g.state];
+				}
+			}
+			const userF = await prisma.user.findFirst({where: { id: currentToken }});
+			if(!userF){
+				return null;
+			}
+
+			const document = DocumentRole[betterState] == null ? 'EMPTY' : DocumentRole[betterState];
+			return {...userF,document:document};
+
+		}else{
+			return null;
+		}
+
 	}
 
 	@Mutation(() => [GraphState])
@@ -61,7 +96,7 @@ export class UserResolver {
 		return prisma.user.findFirst({ where: { email } });
 	}
 
-	@Query(() => [GraphState])
+	@Mutation(() => [GraphState])
 	async loginAuthUser(
 		@Arg('data', () => LoginUser) data: LoginUser,
 		@Ctx() ctx: any

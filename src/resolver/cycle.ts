@@ -5,6 +5,7 @@ import { GraphState } from '../dto/utils';
 import { getTokenId } from '../utils';
 import { CycleAll, InputDeleteCycle, InputNewCycle, InputUpdateCycle } from '../dto/cycle';
 
+
 export const prisma = new PrismaClient();
 
 
@@ -26,7 +27,7 @@ export class CycleResolver {
 		const idValid = getTokenId(ctx)?.userId;
 
 
-		if (!await prisma.user.findFirst({ where: { id: idValid } })) {
+		if (!await prisma.user.findFirst({ where: { id: idValid } })  || idValid == null) {
 			stateReturn.push({
 				field: 'error',
 				message: 'this user not exists',
@@ -129,7 +130,7 @@ export class CycleResolver {
 		const stateReturn = [];
 		const idValid = getTokenId(ctx)?.userId;
 
-		if (!await prisma.user.findFirst({ where: { id: idValid } })) {
+		if (!await prisma.user.findFirst({ where: { id: idValid } })  || idValid == null) {
 			stateReturn.push({
 				field: 'error',
 				message: 'this user not exists',
@@ -191,7 +192,7 @@ async deleteCycle(@Arg('data', () => InputDeleteCycle) data: InputDeleteCycle, @
 	const stateReturn = [];
 	const idValid = getTokenId(ctx)?.userId;
 
-	if (!await prisma.user.findFirst({ where: { id: idValid } })) {
+	if (!await prisma.user.findFirst({ where: { id: idValid } }) || idValid == null) {
 		stateReturn.push({
 			field: 'error',
 			message: 'this user not exists',

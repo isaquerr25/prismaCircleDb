@@ -12,15 +12,15 @@ import { DocumentAll } from '../dto/document';
 export const prisma = new PrismaClient();
 
 @Resolver()
-export class ProfilePictureResolver {
+export class DocumentPictureResolver {
 	@Mutation(() => Boolean, { nullable: true })
-	async addProfilePicture( @Ctx() ctx: any, @Arg('picture', () => GraphQLUpload )
+	async addDocumentPicture( @Ctx() ctx: any, @Arg('picture', () => GraphQLUpload )
 		{
 			createReadStream,
 			filename,
 
 		}: Upload): Promise<boolean> {
-
+		console.log('ent');
 		if(!(filename.includes('.jpg') || filename.includes('.pdf') || filename.includes('.jpeg') || filename.includes('.png')) ){
 			return false;
 		}
@@ -34,7 +34,7 @@ export class ProfilePictureResolver {
 		}catch{
 			return false;
 		}
-
+		console.log('entsssss');
 
 		const hashName = createHash();
 		if(verificationExist(__dirname + `/../../images/${hashName}-${filename}`)){

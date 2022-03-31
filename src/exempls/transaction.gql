@@ -1,61 +1,86 @@
+mutation {
+	createTransaction(
+		data: { action: "DEPOSIT", value: 110093886, userId: 0 }
+	) {
+		field
+		message
+	}
+}
+
+query {
+	allTransactionsByUser {
+		id
+		value
+		hash
+		action
+		wallet
+		createdAt
+		updatedAt
+		state
+	}
+}
+
+query {
+	allTransactions {
+		id
+		value
+		hash
+		action
+		wallet
+		createdAt
+		updatedAt
+		state
+	}
+}
+
+mutation {
+	updateTransaction(
+		data: {
+			id: 2
+			state: "revoked"
+			action: ""
+			value: ""
+			hash: ""
+			wallet: ""
+		}
+	) {
+		field
+		message
+	}
+}
+
+mutation {
+	deleteTransaction(data: { id: 1 }) {
+		field
+		message
+	}
+}
+
 mutation{
-  createTransaction(data:{
-    action:"withdraw"
-    value:100085
-    state:"progress"
-    wallet:"dausdnuwenfqweuf234u12389"
-    userId:0
-  }){
-    field
-    message
+  createDeposit(
+    data:{
+      action: "DEPOSIT"
+      value:500
+    }
+  ){
+    url
+    status{
+      field
+      message
+    }
   }
 }
 
-query{
-  allTransactionsByUser{
-    id
-    value
-    hash
-    action
-    wallet
-    createdAt
-    updatedAt
-    state
-  }
-}
-
-query{
-  allTransactions{
-    id
-    value
-    hash
-    action
-    wallet
-    createdAt
-    updatedAt
-    state
-  }
-}
-
-mutation{
-  updateTransaction(data:{
-    id:2
-    state:"revoked"
-    action:""
-    value:""
-    hash:""
-    wallet:""
-  }){
-    field
-    message
-  }
-}
-
-mutation{
-  deleteTransaction(data:{
-    id:1
-  }){
-    field
-    message
+{
+  "data": {
+    "createDeposit": {
+      "url": "https://www.coinpayments.net/index.php?cmd=status&id=CPGC1QM67BJULXRUWSUZLA95KQ&key=fac25033ffb778a6d63b53a8cfea3825",
+      "status": [
+        {
+          "field": "success",
+          "message": "Click on the button to go to the payment screen"
+        }
+      ]
+    }
   }
 }

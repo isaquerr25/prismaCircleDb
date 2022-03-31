@@ -1,5 +1,5 @@
 import { ObjectType, Field, InputType, Int } from 'type-graphql';
-
+import BigInt from 'graphql-bigint';
 @ObjectType()
 export class UserAll {
 	@Field(() => Int)
@@ -26,7 +26,8 @@ export class UserHaveComponents {
 		wallet?: string | null;
 	@Field((type) => String, { nullable: true })
 		document?: string;
-
+	@Field((type) => BigInt, { nullable: true })
+		valuePrice?: BigInt| null;
 }
 
 

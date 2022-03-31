@@ -5,6 +5,7 @@ import { GraphState } from '../dto/utils';
 import { CreateUser, LoginUser, PasswordAlter, UserAll, UserHaveComponents, WalletAlter } from '../dto/user';
 import { getTokenId, HashGenerator, validateCreateUser, validateLogin, validatePassword } from '../utils';
 import { validate } from 'bitcoin-address-validation';
+import { valueInCash } from './utils';
 export const prisma = new PrismaClient();
 
 
@@ -35,7 +36,9 @@ export class UserResolver {
 			}
 			let betterState = -1;
 			for(const g of await groupDoc){
-
+				if (g == null || g.state == null){
+					continue;
+				}
 				if(validStateDocument[g.state] > betterState){
 					betterState = validStateDocument[g.state];
 				}
@@ -46,7 +49,7 @@ export class UserResolver {
 			}
 
 			const document = DocumentRole[betterState] == null ? 'EMPTY' : DocumentRole[betterState];
-			return {...userF,document:document};
+			return {...userF,document:document,valuePrice:(await valueInCash(currentToken))};
 
 		}else{
 			return null;

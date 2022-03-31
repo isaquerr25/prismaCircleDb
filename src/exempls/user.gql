@@ -43,3 +43,12 @@ mutation{
     message
   }
 }
+query {
+	userInfoDocument {
+		email
+		name
+		wallet
+		valuePrice
+		document
+	}
+}

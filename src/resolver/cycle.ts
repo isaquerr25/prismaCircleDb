@@ -1,9 +1,9 @@
 import { Resolver, Query, Mutation, Arg, Ctx } from 'type-graphql';
-import { PrismaClient } from '@prisma/client';
 import { GraphState } from '../dto/utils';
 
 import { getTokenId } from '../utils';
 import { CycleAll, InputDeleteCycle, InputNewCycle, InputUpdateCycle } from '../dto/cycle';
+import { PrismaClient } from '@prisma/client';
 
 
 export const prisma = new PrismaClient();

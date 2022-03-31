@@ -1,9 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 import { Resolver, Query, Mutation, Arg, Ctx } from 'type-graphql';
-import { InputDeleteTransaction, InputNewTransaction, TransactionAll, InputUpdateTransaction } from '../dto/transaction';
+import { InputDeleteTransaction, InputNewTransaction, TransactionAll, InputUpdateTransaction, RequestDeposit } from '../dto/transaction';
 import { GraphState } from '../dto/utils';
 import { getTokenId } from '../utils';
-
+import { valueInCash } from './utils';
+import clientPayments from '../payments/centerPayments';
+import convert from '../payments/convert';
+import { createTransactionPayment } from '../payments/deposit';
 export const prisma = new PrismaClient();
 
 @Resolver()
@@ -13,17 +16,34 @@ export class TransactionResolver {
 	async allTransactions() {
 		return prisma.transaction.findMany();
 	}
+
+	/* -------------------------------------------------------------------------- */
+	/*                          All Transactions By User                          */
+	/* -------------------------------------------------------------------------- */
 	@Query(() => [TransactionAll],{nullable:true})
 	async allTransactionsByUser(@Ctx() ctx: any) {
 		return prisma.transaction.findMany({where:{userId:getTokenId(ctx)?.userId}});
 	}
+
+	/* -------------------------------------------------------------------------- */
+	/*                             Create Transaction                             */
+	/* -------------------------------------------------------------------------- */
 	@Mutation(()=> [GraphState])
-	async createTransaction(@Arg('data', () => InputNewTransaction) data: InputNewTransaction,@Ctx() ctx: any){
+	async createTransaction(@Arg('data', () => InputNewTransaction)
+		data: InputNewTransaction,@Ctx() ctx: any){
 
 		const stateReturn = [];
 		const idValid = getTokenId(ctx)?.userId;
+		if(!(data.action ==  'WITHDRAW' || data.action =='INVEST')){
+			stateReturn.push({
+				field: 'error',
+				message: 'This type of transaction is not accepted',
+			});
+			return stateReturn;
+		}
+		const user = await prisma.user.findFirst({ where: { id: idValid } });
 
-		if (!await prisma.user.findFirst({ where: { id: idValid } }) || idValid == null) {
+		if (user == null || idValid == null) {
 			stateReturn.push({
 				field: 'error',
 				message: 'this user not exists',
@@ -31,24 +51,30 @@ export class TransactionResolver {
 			return stateReturn;
 		}
 
-		if(data.action =='' || data.value ==0 || data.state =='' || data.wallet ==''){
+		if(user.wallet == ''){
+			stateReturn.push({
+				field: 'wallet',
+				message: 'Add a wallet to your profile and then continue this transaction',
+			});
+			return stateReturn;
+		}
 
-			if (data.action =='') {
-				stateReturn.push({
-					field: 'action',
-					message: 'null',
-				});
-			}
-			if (data.value ==0 ) {
+		data.wallet = user.wallet == null ? '' : user.wallet;
+
+		if(data.wallet == ''){
+			stateReturn.push({
+				field: 'wallet',
+				message: 'Add a wallet to your profile and then continue this transaction',
+			});
+			return stateReturn;
+		}
+
+		if(data.value >=50 || data.wallet ==''){
+
+			if (data.value >=50 ) {
 				stateReturn.push({
 					field: 'value',
 					message: 'value below necessary',
-				});
-			}
-			if (data.state =='') {
-				stateReturn.push({
-					field: 'state',
-					message: 'null',
 				});
 			}
 			if (data.wallet =='') {
@@ -59,19 +85,25 @@ export class TransactionResolver {
 			}
 			return stateReturn;
 		}
-
+		console.log(await valueInCash(idValid));
+		if((data.action =='INVEST' ||data.action =='WITHDRAW') && data.value > (await valueInCash(idValid))  ){
+			stateReturn.push({
+				field: 'Value',
+				message: 'You do not have enough money to complete this transaction',
+			});
+		}
 		if (stateReturn.length == 0) {
 			try {
 				data.userId = idValid;
 				const createUser = await prisma.transaction.create({data});
 				console.log(createUser);
 				stateReturn.push({
-					field: 'create',
-					message: 'success',
+					field: 'success',
+					message: 'An email will be sent to confirm the transaction' ,
 				});
 			} catch {
 				stateReturn.push({
-					field: 'create',
+					field: 'withdraw',
 					message: 'error',
 				});
 			}
@@ -85,8 +117,124 @@ export class TransactionResolver {
 		return stateReturn;
 	}
 
+
+
+	/* -------------------------------------------------------------------------- */
+	/*                               Create Deposit                               */
+	/* -------------------------------------------------------------------------- */
+
+	@Mutation(()=> RequestDeposit)
+	async createDeposit(@Arg('data', () => InputNewTransaction)
+		data: InputNewTransaction,@Ctx() ctx: any){
+		interface stateReturnType{
+				url:string
+				status:{field?:string,message?:string}[]
+			}
+
+		const stateReturn:stateReturnType = {
+			'url':'',
+			'status':[]
+		};
+
+		const idValid = getTokenId(ctx)?.userId;
+
+		if(!(data.action =='DEPOSIT')){
+
+			stateReturn.status.push({
+				field: 'error',
+				message: 'This type of transaction is not accepted',
+			});
+			return stateReturn;
+		}
+		const user = await prisma.user.findFirst({ where: { id: idValid } });
+
+		if (user == null || idValid == null) {
+			stateReturn.status.push({
+				field: 'error',
+				message: 'this user not exists',
+			});
+			return stateReturn;
+		}
+
+		if(user.wallet == ''){
+			stateReturn.status.push({
+				field: 'wallet',
+				message: 'Add a wallet to your profile and then continue this transaction',
+			});
+			return stateReturn;
+		}
+
+		data.wallet = user.wallet == null ? '' : user.wallet;
+
+		if(data.wallet == ''){
+			stateReturn.status.push({
+				field: 'wallet',
+				message: 'Add a wallet to your profile and then continue this transaction',
+			});
+			return stateReturn;
+		}
+		console.log(stateReturn);
+
+		if(data.value <=50 || data.wallet ==''){
+
+			if (data.value <= 50 ) {
+				stateReturn.status.push({
+					field: 'value',
+					message: 'value below necessary',
+				});
+			}
+			if (data.wallet =='') {
+				stateReturn.status.push({
+					field: 'wallet',
+					message: 'null',
+				});
+			}
+		}
+		console.log(stateReturn);
+
+		if (stateReturn.status.length == 0){
+			try{
+				const valueBtcNow = await convert(data.value);
+				const objDeposit = {
+					currency1: 'BTC',
+					currency2: 'BTC',
+					amount: valueBtcNow,
+					buyer_email: user.email
+				};
+				const objTransactionPayment =  await createTransactionPayment( clientPayments(),objDeposit);
+
+				data.userId = idValid;
+				data.hash = objTransactionPayment.txn_id;
+				const createUser = await prisma.transaction.create({data});
+				console.log(createUser);
+				stateReturn.url = objTransactionPayment.status_url;
+				stateReturn.status.push({
+					field: 'success',
+					message: 'Click on the button to go to the payment screen' ,
+				});
+			} catch{
+				stateReturn.status.push({
+					field: 'create deposit',
+					message: 'We cannot complete your transaction right now. Please wait or contact support',
+				});
+			}
+		} else {
+			stateReturn.status.push({
+				field: 'create',
+				message: 'contact the support',
+			});
+		}
+		console.log(stateReturn);
+		return stateReturn;
+	}
+
+
+	/* -------------------------------------------------------------------------- */
+	/*                             Update Transaction                             */
+	/* -------------------------------------------------------------------------- */
 	@Mutation(()=> [GraphState])
-	async updateTransaction(@Arg('data', () => InputUpdateTransaction) data: InputUpdateTransaction,@Ctx() ctx: any){
+	async updateTransaction(@Arg('data', () => InputUpdateTransaction)
+		data: InputUpdateTransaction,@Ctx() ctx: any){
 
 		const stateReturn = [];
 		const idValid = getTokenId(ctx)?.userId;
@@ -134,8 +282,12 @@ export class TransactionResolver {
 		return stateReturn;
 	}
 
+	/* -------------------------------------------------------------------------- */
+	/*                             Delete Transaction                             */
+	/* -------------------------------------------------------------------------- */
 	@Mutation(()=> [GraphState])
-	async deleteTransaction(@Arg('data', () => InputDeleteTransaction) data: InputDeleteTransaction,@Ctx() ctx: any){
+	async deleteTransaction(@Arg('data', () => InputDeleteTransaction)
+		data: InputDeleteTransaction,@Ctx() ctx: any){
 
 		const stateReturn = [];
 		const idValid = getTokenId(ctx)?.userId;
@@ -181,5 +333,6 @@ export class TransactionResolver {
 		}
 		return stateReturn;
 	}
+
 
 }

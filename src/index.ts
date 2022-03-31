@@ -5,14 +5,15 @@ import express from 'express';
 const cors = require('cors');
 import cookieParser = require('cookie-parser');
 import { ApolloServer,gql } from 'apollo-server-express';
+import { config } from 'dotenv';
+config();
 import { UserResolver } from './resolver/user';
 import { TransactionResolver } from './resolver/transaction';
 import { CycleResolver } from './resolver/cycle';
 import { MonthlyProfitResolver } from './resolver/monthlyProfit';
-import { ProfilePictureResolver } from './resolver/document';
+import { DocumentPictureResolver } from './resolver/document';
 import { GraphQLUpload, graphqlUploadExpress} from 'graphql-upload';
 import { finished } from 'stream/promises';
-
 
 
 
@@ -33,7 +34,7 @@ import { finished } from 'stream/promises';
 	app.use(graphqlUploadExpress());
 
 	const schema = await buildSchema({
-		resolvers: [ProfilePictureResolver,UserResolver,TransactionResolver,CycleResolver,MonthlyProfitResolver], // add this
+		resolvers: [DocumentPictureResolver,UserResolver,TransactionResolver,CycleResolver,MonthlyProfitResolver], // add this
 	});
 
 	const server = new ApolloServer({

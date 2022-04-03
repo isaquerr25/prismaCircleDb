@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Cycle" ALTER COLUMN "state" SET DEFAULT E'PROCESS';

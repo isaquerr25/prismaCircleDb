@@ -2,10 +2,10 @@ import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { Resolver, Query, Mutation, Arg, Ctx } from 'type-graphql';
 import { GraphState } from '../dto/utils';
-import { CreateUser, LoginUser, PasswordAlter, UserAll, UserHaveComponents, WalletAlter } from '../dto/user';
+import { CreateUser, LoginUser, PasswordAlter, UserAll, UserCash, UserHaveComponents, WalletAlter } from '../dto/user';
 import { getTokenId, HashGenerator, validateCreateUser, validateLogin, validatePassword } from '../utils';
 import { validate } from 'bitcoin-address-validation';
-import { valueInCash } from './utils';
+import { profitCycle, profitFuture, valueInCash } from './utils';
 export const prisma = new PrismaClient();
 
 
@@ -253,4 +253,33 @@ export class UserResolver {
 			};
 		}
 	}
+
+	@Mutation(()=>Boolean,{nullable:true})
+	async logout(@Ctx() ctx: any) {
+		const { res } = ctx;
+		res.clearCookie('access-token');
+		return null;
+	}
+
+	@Query(() => UserCash, { nullable: true })
+	async userAllMoney(@Ctx() ctx: unknown) {
+
+
+		const currentToken = getTokenId(ctx)?.userId;
+		const newUser = await prisma.user.findFirst({
+			where: { id: currentToken },
+		});
+		if (!currentToken || !newUser){
+			return null;
+		}
+		try{
+			return {balance:(await valueInCash(currentToken)),profitCycle: await profitCycle(currentToken),
+				profitFuture:(await profitFuture(currentToken))};
+
+		}catch{
+			return null;
+		}
+
+	}
+
 }

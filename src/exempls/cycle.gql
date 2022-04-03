@@ -1,17 +1,18 @@
 
-mutation{
-  createCycle(data:{
-    action:"invest"
-    valueBTCbig:"996528354635466"
-    valueUSD:300
-    state:"progress"
-    beginDate:"2010-12-03T10:15:30Z"
-    finishDate:"2030-12-03T10:15:30Z"
-  }){
-    field
-    message
-  }
+mutation {
+	createCycle(
+		data: {
+			action: "invest"
+			valueUSD: 300
+			beginDate: "2010-12-03T10:15:30Z"
+			finishDate: "2011-02-03T10:15:30Z"
+		}
+	) {
+		field
+		message
+	}
 }
+
 
 mutation{
   deleteCycle(data:{
@@ -48,4 +49,21 @@ mutation{
     field
     message
   }
+}
+
+query {
+	allCycleByUser {
+		id
+		action
+		valueUSD
+		valueBTC
+		finalValueUSD
+		finalValueBTC
+		state
+		beginDate
+		finishDate
+		createdAt
+		updatedAt
+		userId
+	}
 }

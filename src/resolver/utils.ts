@@ -1,15 +1,18 @@
 import { PrismaClient } from '@prisma/client';
-
+import { calculatorProfitPossibility } from '../tools/calculatorProfit';
 
 export const prisma = new PrismaClient();
 
 export const valueInCash = async (userId:number) =>{
-	const allUserTransition = prisma.transaction.findMany({where:{userId:userId}});let somaAllTransaction = 0;
+	const allUserTransition = await prisma.transaction.findMany({where:{userId:userId}});
+	let somaAllTransaction = 0;
 
-	for(const transFor of (await allUserTransition)){
+	for(const transFor of (allUserTransition)){
+
 		if(transFor.state == 'CANCEL'){
 			continue;
 		}
+
 		if(transFor.action == 'WITHDRAW' || transFor.action == 'INVEST'){
 			somaAllTransaction -= Number(transFor.value);
 
@@ -17,5 +20,35 @@ export const valueInCash = async (userId:number) =>{
 			somaAllTransaction += Number(transFor.value);
 		}
 	}
+	return somaAllTransaction;
+};
+
+export const profitCycle = async (userId:number) =>{
+	const userCycle = await prisma.cycle.findMany({where:{userId:userId}});
+	let somaAllTransaction = 0;
+
+	for(const transFor of userCycle){
+
+		if(transFor.state == 'COMPLETE'){
+			somaAllTransaction += Number(transFor.finalValueUSD);
+		}
+
+	}
+	return somaAllTransaction;
+};
+
+export const profitFuture = async (userId:number) =>{
+
+	const userCycle = await prisma.cycle.findMany({where:{userId:userId}});
+	let somaAllTransaction = 0;
+
+	for(const transFor of ( userCycle)){
+
+		if(transFor.state == 'ACTIVE'){
+
+			somaAllTransaction += calculatorProfitPossibility(transFor.beginDate,transFor.finishDate,transFor.valueUSD);
+		}
+	}
+
 	return somaAllTransaction;
 };

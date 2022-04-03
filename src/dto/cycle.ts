@@ -10,11 +10,11 @@ export class CycleAll {
 		action?: string;
 	@Field(() => Int)
 		valueUSD?: number;
-	@Field(() => BigInt)
-		valueBTC?: BigInt;
+	@Field(() => String)
+		valueBTC?: string;
 	@Field(() => Int, { nullable: true })
 		finalValueUSD?: number;
-	@Field(() => BigInt, { nullable: true })
+	@Field(() => String, { nullable: true })
 		finalValueBTC?: BigInt;
 	@Field(() => String)
 		state?: string;
@@ -34,14 +34,12 @@ export class CycleAll {
 @InputType()
 export class InputNewCycle {
 
-	@Field(() => String)
-		action!: string;
+	@Field(() => String, { nullable: true })
+		action?: string;
 	@Field(() => Int)
 		valueUSD!: number;
-	@Field(() => String )
-		valueBTCbig!: string;
-	@Field(() => String)
-		state!: string;
+	@Field(() => String, { nullable: true })
+		valueBTC?: string;
 	@Field(() => Date)
 		beginDate!: Date;
 	@Field(() => Date)
@@ -60,8 +58,8 @@ export class InputUpdateCycle {
 		action?: string;
 	@Field(() => Int, { nullable: true })
 		valueUSD?: number;
-	@Field(() => Int, { nullable: true })
-		valueBTC?: number;
+	@Field(() => String, { nullable: true })
+		valueBTC?: string;
 	@Field(() => String, { nullable: true })
 		state?: string;
 	@Field(() => Date, { nullable: true })
@@ -69,10 +67,9 @@ export class InputUpdateCycle {
 	@Field(() => Date, { nullable: true })
 		finishDate?: Date;
 	@Field(() => String, { nullable: true })
-		finalValueBTCbig?: string ;
+		finalValueBTC?: string ;
 	@Field(() => Int, { nullable: true })
 		finalValueUSD?: number;
-	finalValueBTC?: bigint;
 }
 
 @InputType()

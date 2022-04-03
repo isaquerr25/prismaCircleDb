@@ -70,7 +70,7 @@ export interface Upload {
 	createReadStream: () => Stream;
 }
 
-const createHash =() =>{
+export const createHash =() =>{
 	const hash = randomBytes(32);
 	console.log(hash.toString('hex'));
 	return hash.toString('hex');

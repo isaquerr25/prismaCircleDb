@@ -4,7 +4,10 @@ import { GraphState } from '../dto/utils';
 import { getTokenId } from '../utils';
 import { CycleAll, InputDeleteCycle, InputNewCycle, InputUpdateCycle } from '../dto/cycle';
 import { PrismaClient } from '@prisma/client';
-
+import convertUSD from '../payments/convert';
+import { addDays, addMonths } from 'date-fns';
+import { valueInCash } from './utils';
+import { createHash } from './document';
 
 export const prisma = new PrismaClient();
 
@@ -20,23 +23,20 @@ export class CycleResolver {
 		return prisma.cycle.findMany({where:{userId:getTokenId(ctx)?.userId}});
 	}
 
+	/* -------------------------------------------------------------------------- */
+	/*                                 createCycle                                */
+	/* -------------------------------------------------------------------------- */
 	@Mutation(()=> [GraphState])
 	async createCycle(@Arg('data', () => InputNewCycle) data: InputNewCycle,@Ctx() ctx: any){
 
 		const stateReturn = [];
 		const idValid = getTokenId(ctx)?.userId;
-
+		data.action ='invest';
 
 		if (!await prisma.user.findFirst({ where: { id: idValid } })  || idValid == null) {
 			stateReturn.push({
 				field: 'error',
 				message: 'this user not exists',
-			});
-		}
-		if(data.valueBTCbig.match(/[0-9]{16,}/) != null){
-			stateReturn.push({
-				field: 'valueBTC',
-				message: 'the value is too big',
 			});
 		}
 		if( data.beginDate == null ){
@@ -46,85 +46,113 @@ export class CycleResolver {
 			});
 			return stateReturn;
 		}
+		data.valueBTC = (await convertUSD(data.valueUSD,true)).toString();
 
-		const futureDate = new Date(data.beginDate);
-		futureDate.setDate(data.beginDate.getDate()+15);
+		/* --------------------- verify if have wrong parameter --------------------- */
+		const inCash = await valueInCash(idValid);
+		console.log(inCash);
 
-		if(data.action =='' || data.valueUSD ==0 || data.state =='' ||
-			data.finishDate == null ||	futureDate >=  data.finishDate )
+		if(data.valueUSD > inCash ||
+			data.valueUSD < 5000 ||
+			data.finishDate == null ||
+			data.beginDate < new Date() ||
+			data.finishDate < addDays(new Date(data.beginDate),+15) ||
+			data.finishDate > addMonths(new Date(data.beginDate),+13)
+		)
 		{
 
-			if (data.valueUSD == 0 ) {
+			if (data.valueUSD < 5000 || data.valueUSD > inCash) {
 				stateReturn.push({
 					field: 'valueUSD',
 					message: 'value below necessary',
 				});
 			}
 
-			if (data.state == '') {
-				stateReturn.push({
-					field: 'state',
-					message: 'null',
-				});
-			}
-			if (data.action =='') {
-				stateReturn.push({
-					field: 'action',
-					message: 'null',
-				});
-			}
 			if (data.finishDate == null) {
 				stateReturn.push({
 					field: 'finishDate',
 					message: 'null',
 				});
 			}
-			if (futureDate >=  data.finishDate) {
+			if (data.beginDate < new Date() ) {
+				stateReturn.push({
+					field: 'Date',
+					message: 'Date must start at least today',
+				});
+			}
+			if (data.finishDate <  addDays(new Date(data.beginDate),+15)) {
 				stateReturn.push({
 					field: 'beginDate finishDate',
 					message: 'Start and end dates need a difference of at least 15 days',
 				});
 			}
+			if (data.finishDate > addMonths(new Date(data.beginDate),+13)) {
+				stateReturn.push({
+					field: 'finishDate',
+					message: 'We do not accept cycles longer than 1 year',
+				});
+			}
 		}
+
 
 		if (stateReturn.length == 0) {
 			try {
+				const hashGenerated = 'cycle_'+idValid.toString()+createHash;
+				const propTransaction = {
+					action:'INVEST',
+					value: data.valueUSD,
+					valueBTC: data.valueBTC,
+					hash: hashGenerated,
+					wallet: 'internal' ,
+					userId: idValid ,
+				};
+
+				await prisma.transaction.create({data:propTransaction});
 
 				const createUser = await prisma.cycle.create({data:{
 					action:data.action,
 					valueUSD:data.valueUSD,
-					valueBTC:BigInt(data.valueBTCbig),
-					state:data.state,
+					valueBTC:data.valueBTC,
 					beginDate:data.beginDate,
 					finishDate:data.finishDate,
 					userId:idValid,
-
+					hash:hashGenerated
 				}
 				});
+
 				console.log(createUser);
 				stateReturn.push({
 					field: 'create',
 					message: 'success',
 				});
+
 			} catch(error) {
+
 				stateReturn.push({
 					field: 'create',
 					message: error,
 				});
+
 			}
+
 		} else {
+
 			stateReturn.push({
 				field: 'create',
 				message: 'contact the support',
 			});
-		}
 
+		}
 
 		return stateReturn;
 
 	}
 
-@Mutation(()=> [GraphState])
+
+	/* -------------------------------------------------------------------------- */
+	/*                                 updateCycle                                */
+	/* -------------------------------------------------------------------------- */
+	@Mutation(()=> [GraphState])
 	async updateCycle(@Arg('data', () => InputUpdateCycle) data: InputUpdateCycle,@Ctx() ctx: any){
 
 		const stateReturn = [];
@@ -145,32 +173,18 @@ export class CycleResolver {
 				field: 'cycle',
 				message: 'not exists',
 			});
-
 			return stateReturn;
-		}
-		if(data.finalValueBTCbig){
-			if(data.finalValueBTCbig.match(/[0-9]{16,}/) != null){
-				stateReturn.push({
-					field: 'valueBTC',
-					message: 'the value is too big',
-				});
-			}else{
-				data.finalValueBTC = BigInt(data.finalValueBTCbig);
-				delete data.finalValueBTCbig;
-			}
 		}
 		if (stateReturn.length == 0) {
 			try {
 
 				const createUser = await prisma.cycle.update({where:{id:data.id}, data});
 				console.log(createUser);
-
-
-
 				stateReturn.push({
 					field: 'update',
 					message: 'success',
 				});
+
 			} catch(error) {
 				stateReturn.push({
 					field: 'update',
@@ -186,53 +200,53 @@ export class CycleResolver {
 		return stateReturn;
 	}
 	@Mutation(()=> [GraphState])
-async deleteCycle(@Arg('data', () => InputDeleteCycle) data: InputDeleteCycle, @Ctx() ctx: any)
-{
+	async deleteCycle(@Arg('data', () => InputDeleteCycle) data: InputDeleteCycle, @Ctx() ctx: any)
+	{
 
-	const stateReturn = [];
-	const idValid = getTokenId(ctx)?.userId;
+		const stateReturn = [];
+		const idValid = getTokenId(ctx)?.userId;
 
-	if (!await prisma.user.findFirst({ where: { id: idValid } }) || idValid == null) {
-		stateReturn.push({
-			field: 'error',
-			message: 'this user not exists',
-		});
-		return stateReturn;
-	}
-
-	if(data.id ==null){
-
-
-		stateReturn.push({
-			field: 'cycle',
-			message: 'not exists',
-		});
-
-		return stateReturn;
-	}
-
-	if (stateReturn.length == 0) {
-		try {
-			const createUser = await prisma.cycle.delete({where:{id:data.id}});
-			console.log(createUser);
+		if (!await prisma.user.findFirst({ where: { id: idValid } }) || idValid == null) {
 			stateReturn.push({
-				field: 'delete',
-				message: 'success',
+				field: 'error',
+				message: 'this user not exists',
 			});
-		} catch {
+			return stateReturn;
+		}
+
+		if(data.id ==null){
+
+
+			stateReturn.push({
+				field: 'cycle',
+				message: 'not exists',
+			});
+
+			return stateReturn;
+		}
+
+		if (stateReturn.length == 0) {
+			try {
+				const createUser = await prisma.cycle.delete({where:{id:data.id}});
+				console.log(createUser);
+				stateReturn.push({
+					field: 'delete',
+					message: 'success',
+				});
+			} catch {
+				stateReturn.push({
+					field: 'delete',
+					message: 'error',
+				});
+			}
+		} else {
 			stateReturn.push({
 				field: 'delete',
-				message: 'error',
+				message: 'error contact the support',
 			});
 		}
-	} else {
-		stateReturn.push({
-			field: 'delete',
-			message: 'error contact the support',
-		});
+		return stateReturn;
 	}
-	return stateReturn;
-}
 
 
 }

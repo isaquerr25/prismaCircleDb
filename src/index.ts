@@ -14,9 +14,10 @@ import { MonthlyProfitResolver } from './resolver/monthlyProfit';
 import { DocumentPictureResolver } from './resolver/document';
 import { GraphQLUpload, graphqlUploadExpress} from 'graphql-upload';
 import { finished } from 'stream/promises';
+import serviceRoutine from './serviceRoutine/index';
 
 
-
+serviceRoutine();
 
 (async () => {
 	const app = express();

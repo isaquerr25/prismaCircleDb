@@ -1,5 +1,6 @@
 import { ObjectType, Field, InputType, Int } from 'type-graphql';
 import BigInt from 'graphql-bigint';
+
 @ObjectType()
 export class UserAll {
 	@Field(() => Int)
@@ -7,27 +8,35 @@ export class UserAll {
 	@Field(() => String)
 		email!: string;
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	@Field((type) => String, { nullable: true })
+	@Field(() => String, { nullable: true })
 		name?: string | null;
-	@Field((type) => String, { nullable: true })
+	@Field(() => String, { nullable: true })
 		wallet?: string | null;
-
 }
-
 
 
 @ObjectType()
 export class UserHaveComponents {
 	@Field(() => String)
 		email!: string;
-	@Field((type) => String, { nullable: true })
+	@Field(() => String, { nullable: true })
 		name?: string | null;
-	@Field((type) => String, { nullable: true })
+	@Field(() => String, { nullable: true })
 		wallet?: string | null;
-	@Field((type) => String, { nullable: true })
+	@Field(() => String, { nullable: true })
 		document?: string;
-	@Field((type) => BigInt, { nullable: true })
+	@Field(() => BigInt, { nullable: true })
 		valuePrice?: BigInt| null;
+}
+
+@ObjectType()
+export class UserCash {
+	@Field(() => String, { nullable: true })
+		balance?: string| null;
+	@Field(() => String, { nullable: true })
+		profitCycle?: string| null;
+	@Field(() => String, { nullable: true })
+		profitFuture?: string| null;
 }
 
 

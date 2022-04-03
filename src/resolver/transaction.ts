@@ -69,9 +69,9 @@ export class TransactionResolver {
 			return stateReturn;
 		}
 
-		if(data.value >=50 || data.wallet ==''){
+		if(data.value < 5000 || data.wallet ==''){
 
-			if (data.value >=50 ) {
+			if (data.value < 5000 ) {
 				stateReturn.push({
 					field: 'value',
 					message: 'value below necessary',
@@ -175,9 +175,9 @@ export class TransactionResolver {
 		}
 		console.log(stateReturn);
 
-		if(data.value <=50 || data.wallet ==''){
+		if(data.value <5000 || data.wallet ==''){
 
-			if (data.value <= 50 ) {
+			if (data.value < 5000 ) {
 				stateReturn.status.push({
 					field: 'value',
 					message: 'value below necessary',
@@ -205,7 +205,10 @@ export class TransactionResolver {
 
 				data.userId = idValid;
 				data.hash = objTransactionPayment.txn_id;
+				data.valueBTC = objTransactionPayment.amount;
+
 				const createUser = await prisma.transaction.create({data});
+
 				console.log(createUser);
 				stateReturn.url = objTransactionPayment.status_url;
 				stateReturn.status.push({

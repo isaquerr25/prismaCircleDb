@@ -1,15 +1,20 @@
 import { PrismaClient } from '@prisma/client';
+import { consultFinishTransaction } from './transaction';
+import { consultFinishCycle } from './cycles';
 export const prisma = new PrismaClient();
 
 
-(function better(){
+
+
+export default ()=>{
+
+	(async function routines (){
 	//logic here
-	setTimeout(better, 100);
-})();
+		await consultFinishTransaction(prisma);
+		await consultFinishCycle(prisma);
+		setTimeout(routines, 1000*60*10);
+	})();
 
-
-
-// consult if transaction finish
-
+};
 
 // consult if cycle invest finish

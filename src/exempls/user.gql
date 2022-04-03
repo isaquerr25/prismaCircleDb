@@ -21,27 +21,23 @@ query {
 		email
 		name
 		password
-
 	}
 }
 
-mutation{
-  updateAuthPassword(data:{
-    oldPassword:"Teste25@"
-    password:"Teste24@"
-  }){
-    field
-    message
-  }
+mutation {
+	updateAuthPassword(
+		data: { oldPassword: "Teste25@", password: "Teste24@" }
+	) {
+		field
+		message
+	}
 }
 
-mutation{
-  updateWallet(data:{
-    wallet:"16vmNcrA4Mvf7CaRLirAmpnjz1ZH3bWNkQ"
-  }){
-    field
-    message
-  }
+mutation {
+	updateWallet(data: { wallet: "16vmNcrA4Mvf7CaRLirAmpnjz1ZH3bWNkQ" }) {
+		field
+		message
+	}
 }
 query {
 	userInfoDocument {
@@ -51,4 +47,16 @@ query {
 		valuePrice
 		document
 	}
+}
+
+query {
+	userAllMoney {
+		balance
+		profitCycle
+		profitFuture
+	}
+}
+
+mutation {
+	logout
 }

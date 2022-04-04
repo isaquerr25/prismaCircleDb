@@ -15,6 +15,7 @@ import { DocumentPictureResolver } from './resolver/document';
 import { GraphQLUpload, graphqlUploadExpress} from 'graphql-upload';
 import { finished } from 'stream/promises';
 import serviceRoutine from './serviceRoutine/index';
+import { StaffResolver } from './resolver/staff';
 
 
 serviceRoutine();
@@ -35,7 +36,7 @@ serviceRoutine();
 	app.use(graphqlUploadExpress());
 
 	const schema = await buildSchema({
-		resolvers: [DocumentPictureResolver,UserResolver,TransactionResolver,CycleResolver,MonthlyProfitResolver], // add this
+		resolvers: [StaffResolver,DocumentPictureResolver,UserResolver,TransactionResolver,CycleResolver,MonthlyProfitResolver], // add this
 	});
 
 	const server = new ApolloServer({

@@ -1,0 +1,17 @@
+/* ------------------------------- Staff login ------------------------------ */
+mutation {
+	loginStaff(data: { email: "admin2504@test.com", password: "Teste25@" }) {
+		field
+		message
+	}
+}
+
+query {
+	activeStartStaff {
+		cyclesStart
+		documentsValidate
+		valueEnterToday
+		withdrawAll
+		transactionPay
+	}
+}

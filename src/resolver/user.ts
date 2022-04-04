@@ -1,33 +1,38 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import { Resolver, Query, Mutation, Arg, Ctx } from 'type-graphql';
+import { Resolver, Query, Mutation, Arg, Ctx, UseMiddleware } from 'type-graphql';
 import { GraphState } from '../dto/utils';
 import { CreateUser, LoginUser, PasswordAlter, UserAll, UserCash, UserHaveComponents, WalletAlter } from '../dto/user';
 import { getTokenId, HashGenerator, validateCreateUser, validateLogin, validatePassword } from '../utils';
 import { validate } from 'bitcoin-address-validation';
 import { profitCycle, profitFuture, valueInCash } from './utils';
+import { isUserAuth } from '../middleware/isUserAuth';
+import { isManagerAuth } from '../middleware/isManagerAuth';
 export const prisma = new PrismaClient();
 
 
 enum DocumentRole {
-  'INVALID',
-  'PROCESS',
-  'VALID',
+	'INVALID',
+	'PROCESS',
+	'VALID',
 }
 @Resolver()
 export class UserResolver {
+
+	@UseMiddleware(isManagerAuth)
 	@Query(() => [UserAll], { nullable: true })
 	async allUsers() {
 		return prisma.user.findMany();
 	}
 
+	@UseMiddleware(isUserAuth)
 	@Query(() => UserHaveComponents, { nullable: true })
 	async userInfoDocument(@Ctx() ctx: any) {
 
 		const validStateDocument = {INVALID:0,PROCESS:1,VALID:2};
 
 		const currentToken = getTokenId(ctx)?.userId;
-
+		console.log(getTokenId(ctx));
 		if(currentToken){
 			const groupDoc = prisma.document.findMany({where: { userId: currentToken }});
 			if(!groupDoc){
@@ -95,6 +100,8 @@ export class UserResolver {
 
 		return stateReturn;
 	}
+
+
 	GetValidateEmail(email: string) {
 		return prisma.user.findFirst({ where: { email } });
 	}
@@ -113,7 +120,8 @@ export class UserResolver {
 			const coke = await validateLogin(
 				haveEmail.password,
 				data.password,
-				haveEmail.id
+				haveEmail.id,
+				haveEmail.role
 			);
 			console.log('coke =============================>', coke);
 
@@ -144,6 +152,7 @@ export class UserResolver {
 		return newValidateUser;
 	}
 
+	@UseMiddleware(isUserAuth)
 	@Mutation(() => GraphState, { nullable: true })
 	async updateAuthPassword(
 		@Arg('data', () => PasswordAlter) data: PasswordAlter,
@@ -205,6 +214,7 @@ export class UserResolver {
 		return { field: 'old password', message: '404' };
 	}
 
+	@UseMiddleware(isUserAuth)
 	@Mutation(() => GraphState, { nullable: true })
 	async updateWallet(
 		@Arg('data', () => WalletAlter) data: WalletAlter,
@@ -254,6 +264,8 @@ export class UserResolver {
 		}
 	}
 
+
+
 	@Mutation(()=>Boolean,{nullable:true})
 	async logout(@Ctx() ctx: any) {
 		const { res } = ctx;
@@ -261,6 +273,7 @@ export class UserResolver {
 		return null;
 	}
 
+	@UseMiddleware(isUserAuth)
 	@Query(() => UserCash, { nullable: true })
 	async userAllMoney(@Ctx() ctx: unknown) {
 

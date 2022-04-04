@@ -49,19 +49,20 @@ const validateName = (name: string) => {
 		);
 };
 
-const createAuthToken = (user:number) => {
+const createAuthToken = (user:number,role:unknown) => {
 	const privateKey:string = process.env.JWT_KEY != undefined ? process.env.JWT_KEY : '';
 	const tokenData = {
 		userId: user,
+		role: role,
 	};
 	const token = jwt.sign(tokenData, privateKey);
 	
 	return token;
 };
 
-export const validateLogin = async (passwordDB:string,password:string,userId:number) => {
+export const validateLogin = async (passwordDB:string,password:string,userId:number,role:unknown) => {
 	if (await bcrypt.compare(password, passwordDB)){
-		return await createAuthToken(userId);
+		return await createAuthToken(userId,role);
 	}
 	else{
 		return null;
@@ -80,7 +81,9 @@ export const decodeToken = (token:string) => {
 
 interface JwtPayload {
 	userId: number;
+	role:string;
 }
+
 export const getTokenId = (ctx: any) => {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const { res, req } = ctx;

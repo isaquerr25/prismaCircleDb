@@ -1,4 +1,4 @@
-import { Resolver, Mutation, Arg, Ctx, Query } from 'type-graphql';
+import { Resolver, Mutation, Arg, Ctx, Query, UseMiddleware } from 'type-graphql';
 import { GraphQLUpload } from 'graphql-upload';
 import { createWriteStream } from 'fs';
 import { Stream } from 'stream';
@@ -6,10 +6,13 @@ import { PrismaClient } from '@prisma/client';
 import { getTokenId } from '../utils';
 import { randomBytes }  from 'crypto';
 import fs from 'fs';
-import { DocumentAll } from '../dto/document';
+import { DocumentAll, DocumentAllUser, InputDocumentAlter } from '../dto/document';
+import { isManagerAuth } from '../middleware/isManagerAuth';
+import { GraphState } from '../dto/utils';
 
 
 export const prisma = new PrismaClient();
+
 
 @Resolver()
 export class DocumentPictureResolver {
@@ -58,9 +61,28 @@ export class DocumentPictureResolver {
 	async allDocuments(){
 		return prisma.document.findMany();
 	}
+	@Query(() => [DocumentAllUser])
+	async allDocumentsValidation(){
+		return prisma.document.findMany({where:{state:'PROCESS'},include:{user:true}});
+	}
 
+	@UseMiddleware(isManagerAuth)
+	@Mutation(() => Boolean, { nullable: true })
+	async alterDocument(@Arg('data',()=>InputDocumentAlter) data:InputDocumentAlter){
+
+		try{
+			await prisma.document.update({
+				where:{id:data.id},
+				data:{state:data.state}
+			});
+			return true;
+		}catch{
+			return false;
+		}
+
+
+	}
 }
-
 
 
 export interface Upload {

@@ -7,3 +7,44 @@ query {
 		updatedAt
 	}
 }
+
+query {
+	allDocumentsValidation {
+		id
+		state
+		fileName
+		userId
+		user {
+			id
+			email
+			email
+			wallet
+		}
+	}
+}
+
+mutation {
+	alterDocument(data: { id: 1, state: "INVALID" })
+}
+
+
+/* ---------------------------------- staff --------------------------------- */
+mutation {
+	getTypeTransaction(data: { action: "WITHDRAW", state: "PROCESS" }) {
+		id
+		action
+		value
+		state
+		hash
+		createdAt
+		updatedAt
+		wallet
+		userId
+		user {
+			id
+			email
+			name
+			wallet
+		}
+	}
+}

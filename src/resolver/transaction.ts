@@ -1,12 +1,13 @@
 import { PrismaClient } from '@prisma/client';
-import { Resolver, Query, Mutation, Arg, Ctx } from 'type-graphql';
-import { InputDeleteTransaction, InputNewTransaction, TransactionAll, InputUpdateTransaction, RequestDeposit } from '../dto/transaction';
+import { Resolver, Query, Mutation, Arg, Ctx, UseMiddleware } from 'type-graphql';
+import { InputDeleteTransaction, InputNewTransaction, TransactionAll, InputUpdateTransaction, RequestDeposit, InputTypeTransaction, TransactionUser } from '../dto/transaction';
 import { GraphState } from '../dto/utils';
 import { getTokenId } from '../utils';
 import { valueInCash } from './utils';
 import clientPayments from '../payments/centerPayments';
 import convert from '../payments/convert';
 import { createTransactionPayment } from '../payments/deposit';
+import { isManagerAuth } from '../middleware/isManagerAuth';
 export const prisma = new PrismaClient();
 
 @Resolver()
@@ -235,6 +236,8 @@ export class TransactionResolver {
 	/* -------------------------------------------------------------------------- */
 	/*                             Update Transaction                             */
 	/* -------------------------------------------------------------------------- */
+
+	@UseMiddleware(isManagerAuth)
 	@Mutation(()=> [GraphState])
 	async updateTransaction(@Arg('data', () => InputUpdateTransaction)
 		data: InputUpdateTransaction,@Ctx() ctx: any){
@@ -288,6 +291,7 @@ export class TransactionResolver {
 	/* -------------------------------------------------------------------------- */
 	/*                             Delete Transaction                             */
 	/* -------------------------------------------------------------------------- */
+	@UseMiddleware(isManagerAuth)
 	@Mutation(()=> [GraphState])
 	async deleteTransaction(@Arg('data', () => InputDeleteTransaction)
 		data: InputDeleteTransaction,@Ctx() ctx: any){
@@ -338,4 +342,15 @@ export class TransactionResolver {
 	}
 
 
+
+	@UseMiddleware(isManagerAuth)
+	@Mutation(()=> [TransactionUser])
+	async getTypeTransaction(@Arg('data', () => InputTypeTransaction)
+		data: InputTypeTransaction,@Ctx() ctx: any){
+
+		return await prisma.transaction.findMany({
+			where: { state: data.state , action: data.action},
+			include:{user:true}
+		});
+	}
 }

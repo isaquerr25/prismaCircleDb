@@ -3,7 +3,7 @@ import clientPayments from '../payments/centerPayments';
 
 export const consultFinishTransaction = async(prisma:any) => {
 
-	const allIncompleteTransaction = await prisma.transaction.findMany({ where:{ state:'PROCESS' ,NOT:[{hash: null},{wallet: 'internal'}]}} );
+	const allIncompleteTransaction = await prisma.transaction.findMany({ where:{ state:'PROCESS', action:'DEPOSIT',NOT:[{hash: null},{wallet: 'internal'}]}} );
 	if(allIncompleteTransaction.length > 0){
 
 		const TxMultiHash = [];

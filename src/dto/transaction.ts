@@ -1,6 +1,7 @@
 import { ObjectType, Field, InputType, Int } from 'type-graphql';
 import BigInt from 'graphql-bigint';
 import { DepositState, GraphState } from './utils';
+import { UserAll } from './user';
 // enum TransactionActionTypes {
 //   WITHDRAW
 //   DEPOSIT
@@ -91,4 +92,38 @@ export class RequestDeposit {
 		url!: string ;
 	@Field(() => [DepositState] , { nullable: true })
 		status!: [] | null ;
+}
+
+
+@InputType()
+export class InputTypeTransaction {
+	@Field(() => String)
+		action!: 'WITHDRAW' | 'DEPOSIT' | 'INVEST';
+	@Field(() => String, { nullable: true })
+		state!: 'CANCEL' | 'PROCESS' | 'COMPLETE_CYCLE';
+}
+
+@ObjectType()
+export class TransactionUser {
+
+	@Field(() => Int)
+		id?: number;
+	@Field(() => String)
+		action!: string;
+	@Field(() => BigInt)
+		value!: BigInt;
+	@Field(() => String)
+		state?: string;
+	@Field(() => String, { nullable: true })
+		hash?: string | null;
+	@Field(() => Date, { nullable: true })
+		createdAt?: Date;
+	@Field(() => Date, { nullable: true })
+		updatedAt?: Date;
+	@Field(() => String, { nullable: true })
+		wallet?: string | null;
+	@Field(() => Int, { nullable: true })
+		userId?: number | null;
+	@Field(() => UserAll)
+		user?: UserAll;
 }

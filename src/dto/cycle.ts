@@ -1,5 +1,6 @@
 import { ObjectType, Field, InputType, Int} from 'type-graphql';
 import BigInt from 'graphql-bigint';
+import { UserAll } from './user';
 
 @ObjectType()
 export class CycleAll {
@@ -31,6 +32,37 @@ export class CycleAll {
 
 }
 
+@ObjectType()
+export class CycleAllUser {
+
+	@Field(() => Int)
+		id?: number;
+	@Field(() => String)
+		action?: string;
+	@Field(() => Int)
+		valueUSD?: number;
+	@Field(() => String)
+		valueBTC?: string;
+	@Field(() => Int, { nullable: true })
+		finalValueUSD?: number;
+	@Field(() => String, { nullable: true })
+		finalValueBTC?: BigInt;
+	@Field(() => String)
+		state?: string;
+	@Field(() => Date)
+		beginDate?: Date;
+	@Field(() => Date, { nullable: true })
+		finishDate?: Date;
+	@Field(() => Date, { nullable: true })
+		createdAt?: Date;
+	@Field(() => Date, { nullable: true })
+		updatedAt?: Date;
+	@Field(() => UserAll)
+		user?: UserAll;
+	@Field(() => String, { nullable: true })
+		hash?: string;
+}
+
 @InputType()
 export class InputNewCycle {
 
@@ -46,6 +78,8 @@ export class InputNewCycle {
 		finishDate!: Date;
 	@Field(() => Int, { nullable: true })
 		userId!: number;
+	@Field(() => String, { nullable: true })
+		hash!: string;
 }
 
 
@@ -78,3 +112,7 @@ export class InputDeleteCycle {
 	@Field(() => Int)
 		id!: number;
 }
+
+
+
+// cloudNery;

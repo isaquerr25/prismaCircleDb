@@ -1,12 +1,12 @@
+import { config } from 'dotenv';
+config();
 import {buildSchema} from 'type-graphql';
 import 'reflect-metadata';
 import expressPlayground from 'graphql-playground-middleware-express';
 import express from 'express';
-const cors = require('cors');
+import cors from 'cors';
 import cookieParser = require('cookie-parser');
 import { ApolloServer,gql } from 'apollo-server-express';
-import { config } from 'dotenv';
-config();
 import { UserResolver } from './resolver/user';
 import { TransactionResolver } from './resolver/transaction';
 import { CycleResolver } from './resolver/cycle';
@@ -16,14 +16,19 @@ import { GraphQLUpload, graphqlUploadExpress} from 'graphql-upload';
 import { finished } from 'stream/promises';
 import serviceRoutine from './serviceRoutine/index';
 import { StaffResolver } from './resolver/staff';
-
+import routes from './router';
 
 serviceRoutine();
 
 (async () => {
-	const app = express();
+
 	const corsOptions = {
-		origin: 'http://localhost:3000',
+		origin: ['http://localhost:3000','http://localhost:4000'],
+		credentials: true,
+		optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+	};
+	const corsPicture = {
+		origin: 'http://localhost:4000',
 		credentials: true,
 		optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 	};
@@ -31,9 +36,6 @@ serviceRoutine();
 		origin: 'https://studio.apollographql.com',
 		credentials: true
 	};
-
-	app.use(cookieParser());
-	app.use(graphqlUploadExpress());
 
 	const schema = await buildSchema({
 		resolvers: [StaffResolver,DocumentPictureResolver,UserResolver,TransactionResolver,CycleResolver,MonthlyProfitResolver], // add this
@@ -46,7 +48,10 @@ serviceRoutine();
 	});
 
 	await server.start();
-
+	const app = express();
+	app.use(cookieParser());
+	app.use(routes);
+	app.use(graphqlUploadExpress());
 	server.applyMiddleware({ app, cors: corsOptions });
 	app.get('/playground', expressPlayground({ endpoint: '/graphql' }));
 

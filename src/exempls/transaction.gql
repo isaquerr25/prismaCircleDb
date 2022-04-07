@@ -85,3 +85,27 @@ mutation{
   }
 }
 /* -------------------------------------------------------------------------- */
+
+mutation{
+  	getTypeTransaction(data:{
+      action:"WITHDRAW"
+      state:"PROCESS"
+    }){
+    id
+    action
+    value
+    state
+    hash
+    createdAt
+    updatedAt
+    wallet
+    userId
+    user{
+      id
+      email
+      name
+      wallet
+    }
+
+  }
+}

@@ -1,23 +1,32 @@
-import { Resolver, Query, Mutation, Arg, Ctx } from 'type-graphql';
+import { Resolver, Query, Mutation, Arg, Ctx, UseMiddleware } from 'type-graphql';
 import { GraphState } from '../dto/utils';
-
 import { getTokenId } from '../utils';
-import { CycleAll, InputDeleteCycle, InputNewCycle, InputUpdateCycle } from '../dto/cycle';
+import { CycleAll, CycleAllUser, InputDeleteCycle, InputNewCycle, InputUpdateCycle } from '../dto/cycle';
 import { PrismaClient } from '@prisma/client';
 import convertUSD from '../payments/convert';
 import { addDays, addMonths } from 'date-fns';
 import { valueInCash } from './utils';
 import { createHash } from './document';
+import { isManagerAuth } from '../middleware/isManagerAuth';
 
 export const prisma = new PrismaClient();
 
 
 @Resolver()
 export class CycleResolver {
+
+	@UseMiddleware(isManagerAuth)
 	@Query(() => [CycleAll], { nullable: true })
 	async allCycle() {
 		return prisma.cycle.findMany();
 	}
+
+	@UseMiddleware(isManagerAuth)
+	@Query(() => [CycleAllUser], { nullable: true })
+	async allCycleUserAdminProcess() {
+		return prisma.cycle.findMany({where:{state:'PROCESS'},include:{user:true}});
+	}
+
 	@Query(() => [CycleAll],{nullable:true})
 	async allCycleByUser(@Ctx() ctx: any) {
 		return prisma.cycle.findMany({where:{userId:getTokenId(ctx)?.userId}});
@@ -26,6 +35,7 @@ export class CycleResolver {
 	/* -------------------------------------------------------------------------- */
 	/*                                 createCycle                                */
 	/* -------------------------------------------------------------------------- */
+
 	@Mutation(()=> [GraphState])
 	async createCycle(@Arg('data', () => InputNewCycle) data: InputNewCycle,@Ctx() ctx: any){
 
@@ -61,7 +71,10 @@ export class CycleResolver {
 		)
 		{
 
+
 			if (data.valueUSD < 5000 || data.valueUSD > inCash) {
+				console.log(inCash);
+				console.log(inCash);
 				stateReturn.push({
 					field: 'valueUSD',
 					message: 'value below necessary',
@@ -97,7 +110,7 @@ export class CycleResolver {
 
 		if (stateReturn.length == 0) {
 			try {
-				const hashGenerated = 'cycle_'+idValid.toString()+createHash;
+				const hashGenerated = 'cycle_'+idValid.toString()+createHash();
 				const propTransaction = {
 					action:'INVEST',
 					value: data.valueUSD,
@@ -152,6 +165,7 @@ export class CycleResolver {
 	/* -------------------------------------------------------------------------- */
 	/*                                 updateCycle                                */
 	/* -------------------------------------------------------------------------- */
+	@UseMiddleware(isManagerAuth)
 	@Mutation(()=> [GraphState])
 	async updateCycle(@Arg('data', () => InputUpdateCycle) data: InputUpdateCycle,@Ctx() ctx: any){
 
@@ -178,14 +192,24 @@ export class CycleResolver {
 		if (stateReturn.length == 0) {
 			try {
 
-				const createUser = await prisma.cycle.update({where:{id:data.id}, data});
-				console.log(createUser);
+				const createCycle = await prisma.cycle.update({where:{id:data.id}, data});
+
+				if(data?.state =='CANCEL'){
+					const cycleTemp = await prisma.cycle.findFirst({where:{id:data.id}});
+					const transactionTemp = await prisma.transaction.findFirst({where:{hash:cycleTemp?.hash}});
+					if(transactionTemp){
+						await prisma.transaction.update({where:{id:transactionTemp.id!},data:{state:'CANCEL'}});
+					}
+				}
+
+				console.log(createCycle);
 				stateReturn.push({
 					field: 'update',
 					message: 'success',
 				});
 
 			} catch(error) {
+				console.log(error);
 				stateReturn.push({
 					field: 'update',
 					message: error,
@@ -199,6 +223,8 @@ export class CycleResolver {
 		}
 		return stateReturn;
 	}
+
+	@UseMiddleware(isManagerAuth)
 	@Mutation(()=> [GraphState])
 	async deleteCycle(@Arg('data', () => InputDeleteCycle) data: InputDeleteCycle, @Ctx() ctx: any)
 	{

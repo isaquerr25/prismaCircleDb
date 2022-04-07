@@ -55,7 +55,7 @@ export class StaffResolver {
 				haveEmail.password,
 				data.password,
 				haveEmail.id,
-				haveEmail.role
+				haveEmail.role.toString()
 			);
 			console.log('coke =============================>', coke);
 

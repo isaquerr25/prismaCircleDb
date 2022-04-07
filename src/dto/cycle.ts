@@ -29,7 +29,8 @@ export class CycleAll {
 		updatedAt?: Date;
 	@Field(() => Int, { nullable: true })
 		userId?: number;
-
+	@Field(() => String, { nullable: true })
+		hash?: string;
 }
 
 @ObjectType()

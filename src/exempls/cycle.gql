@@ -23,21 +23,22 @@ mutation{
   }
 }
 
-query{
-  allCycle{
-    action
-    id
-    createdAt
-    beginDate
-    finishDate
-    valueBTC
-    valueUSD
-    finalValueUSD
-    finalValueBTC
-    state
-    beginDate
-    userId
-  }
+query {
+	allCycle {
+		action
+		id
+		createdAt
+		beginDate
+		finishDate
+		valueBTC
+		valueUSD
+		finalValueUSD
+		finalValueBTC
+		hash
+		state
+		beginDate
+		userId
+	}
 }
 
 mutation{

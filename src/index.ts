@@ -17,8 +17,27 @@ import { finished } from 'stream/promises';
 import serviceRoutine from './serviceRoutine/index';
 import { StaffResolver } from './resolver/staff';
 import routes from './router';
+import nodemailer from 'nodemailer';
 
-serviceRoutine();
+
+/* -------------------------------------------------------------------------- */
+/*         NOTE ativar novamente         */
+/* -------------------------------------------------------------------------- */
+
+// serviceRoutine();
+
+const transporter = nodemailer.createTransport({
+	service: 'Gmail',
+	auth: {
+		user: process.env.GMAIL_USER,
+		pass: process.env.GMAIL_PASS,
+	},
+});
+
+const SECRET = 'aslkdjlkaj10830912039jlkoaiuwerasdjflkasd';
+const SECRET_2 = 'ajsdklfjaskljgklasjoiquw01982310nlksas;sdlkfj';
+const EMAIL_SECRET = 'asdf1093KMnzxcvnkljvasdu09123nlasdasdf';
+
 
 (async () => {
 

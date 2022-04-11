@@ -15,3 +15,70 @@ query {
 		transactionPay
 	}
 }
+
+
+mutation{
+  userInfoIdStaff(data:{
+    id:3
+  }){
+    name
+    email
+    wallet
+    document
+    qDeposit
+    allDeposit
+    document
+    qDeposit
+    allDeposit
+    qWithdraw
+    allWithdraw
+    qInvest
+    allInvest
+    qCompleteInvest
+    allCompleteInvest
+    qCycleProcess
+    allCycleProcess
+    qCycleActive
+    allCycleActive
+    qCycleComplete
+    allCycleComplete
+    cash
+  }
+}
+
+
+
+
+mutation{
+  allTransactionsByUserStaff(data:{
+    id:3
+  }){
+    id
+    action
+    value
+    state
+    hash
+    createdAt
+    updatedAt
+    wallet
+  }
+}
+
+mutation{
+  allCycleByUserStaff(data:{
+    id:3
+  }){
+    id
+    action
+    valueUSD
+    valueBTC
+    finalValueUSD
+    finalValueBTC
+    state
+    beginDate
+    finishDate
+    createdAt
+    updatedAt
+    hash
+  }
+}

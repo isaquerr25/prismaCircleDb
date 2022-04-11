@@ -8,6 +8,7 @@ import { validate } from 'bitcoin-address-validation';
 import { profitCycle, profitFuture, valueInCash } from './utils';
 import { isUserAuth } from '../middleware/isUserAuth';
 import { isManagerAuth } from '../middleware/isManagerAuth';
+import emailValidSend from '../systemEmail';
 export const prisma = new PrismaClient();
 
 
@@ -81,6 +82,7 @@ export class UserResolver {
 				data.password = await HashGenerator(data.password);
 				const createUser = await prisma.user.create({ data });
 				console.log(createUser);
+				emailValidSend(createUser);
 				stateReturn.push({
 					field: 'create',
 					message: 'success',
@@ -114,15 +116,27 @@ export class UserResolver {
 		console.log('ctx');
 		const newValidateUser: GraphState[] = [];
 
-		const haveEmail = await this.GetValidateEmail(data.email);
 
+		const haveEmail = await this.GetValidateEmail(data.email);
+		
 		if (haveEmail) {
+			if(haveEmail?.confirm != 'valid'){
+				emailValidSend(haveEmail);
+				newValidateUser.push({
+					field: 'access',
+					message: 'email sent to confirm an account',
+				});
+			
+				return newValidateUser;
+			}
 			const coke = await validateLogin(
 				haveEmail.password,
 				data.password,
 				haveEmail.id,
 				haveEmail.role
 			);
+
+
 			console.log('coke =============================>', coke);
 
 			if (coke) {

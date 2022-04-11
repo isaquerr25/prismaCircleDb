@@ -193,14 +193,22 @@ export class CycleResolver {
 			try {
 
 				const createCycle = await prisma.cycle.update({where:{id:data.id}, data});
+				const cycleTemp = await prisma.cycle.findFirst({where:{id:data.id}});
+				const transactionTemp = await prisma.transaction.findFirst({where:{hash:cycleTemp?.hash}});
 
-				if(data?.state =='CANCEL'){
-					const cycleTemp = await prisma.cycle.findFirst({where:{id:data.id}});
-					const transactionTemp = await prisma.transaction.findFirst({where:{hash:cycleTemp?.hash}});
-					if(transactionTemp){
-						await prisma.transaction.update({where:{id:transactionTemp.id!},data:{state:'CANCEL'}});
+				if(transactionTemp){
+
+					if(data?.state =='CANCEL'){
+
+						await prisma.transaction.update({where:{id:transactionTemp.id},data:{state:'CANCEL'}});
+
+					}else if(data?.state =='COMPLETE'){
+
+						await prisma.transaction.update({where:{id:transactionTemp.id},data:{state:'COMPLETE'}});
+						
 					}
 				}
+				
 
 				console.log(createCycle);
 				stateReturn.push({

@@ -29,6 +29,13 @@ mutation{
   }
 }
 
+mutation {
+	idMonthlyProfit(data: { id: 1 }) {
+		id
+		profit
+		finishDate
+	}
+}
 
 mutation{
   deleteMonthlyProfit(data:{

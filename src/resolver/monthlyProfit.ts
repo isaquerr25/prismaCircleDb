@@ -1,8 +1,9 @@
-import { Resolver, Query, Mutation, Arg } from 'type-graphql';
+import { Resolver, Query, Mutation, Arg, UseMiddleware } from 'type-graphql';
 import { PrismaClient } from '@prisma/client';
 import { GraphState } from '../dto/utils';
-import { InputMonthlyProfit, InputUpdateMonthlyProfit, MonthlyProfitAll } from '../dto/monthlyProfit';
+import { InputDeleteMonthlyProfit, InputMonthlyProfit, InputUpdateMonthlyProfit, MonthlyProfitAll } from '../dto/monthlyProfit';
 import { InputDeleteCycle } from '../dto/cycle';
+import { isManagerAuth } from '../middleware/isManagerAuth';
 
 export const prisma = new PrismaClient();
 
@@ -10,11 +11,19 @@ export const prisma = new PrismaClient();
 @Resolver()
 export class MonthlyProfitResolver {
 
+	@UseMiddleware(isManagerAuth)
 	@Query(() => [MonthlyProfitAll], { nullable: true })
 	async allMonthlyProfit() {
 		return prisma.monthlyProfit.findMany();
 	}
 
+	@UseMiddleware(isManagerAuth)
+	@Mutation(() => MonthlyProfitAll, { nullable: true })
+	async idMonthlyProfit(@Arg('data', () => InputDeleteMonthlyProfit) data: InputDeleteMonthlyProfit) {
+		return prisma.monthlyProfit.findFirst({where:{id:data.id}});
+	}
+
+	@UseMiddleware(isManagerAuth)
 	@Mutation(()=> [GraphState])
 	async createMonthlyProfit(@Arg('data', () => InputMonthlyProfit) data: InputMonthlyProfit){
 		const stateReturn = [];
@@ -34,6 +43,7 @@ export class MonthlyProfitResolver {
 		return stateReturn;
 	}
 
+	@UseMiddleware(isManagerAuth)
 	@Mutation(()=> [GraphState])
 	async updateMonthlyProfit(@Arg('data', () => InputUpdateMonthlyProfit) data: InputUpdateMonthlyProfit){
 
@@ -75,6 +85,7 @@ export class MonthlyProfitResolver {
 	}
 
 
+	@UseMiddleware(isManagerAuth)
 	@Mutation(()=> [GraphState])
 	async deleteMonthlyProfit(@Arg('data', () => InputDeleteCycle) data: InputDeleteCycle){
 

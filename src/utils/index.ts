@@ -49,7 +49,7 @@ const validateName = (name: string) => {
 		);
 };
 
-const createAuthToken = (user:number,role:unknown) => {
+export const createAuthToken = (user:number,role:unknown) => {
 	const privateKey:string = process.env.JWT_KEY != undefined ? process.env.JWT_KEY : '';
 	const tokenData = {
 		userId: user,
@@ -83,6 +83,11 @@ interface JwtPayload {
 	userId: number;
 	role:string;
 }
+
+export const decodeTokenType = (info: any) => {
+
+	return decodeToken(info) as JwtPayload;
+};
 
 export const getTokenId = (ctx: any) => {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars

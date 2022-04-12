@@ -19,6 +19,8 @@ export default () => {
 };
 
 
+
+
 // console.log(await client.getBasicInfo());
 // console.log(await client.rates({ short: 0, accepted: 1}));
 // console.log(await client.balances({ all: 0}));

@@ -18,6 +18,7 @@ import serviceRoutine from './serviceRoutine/index';
 import { StaffResolver } from './resolver/staff';
 import routes from './router';
 import nodemailer from 'nodemailer';
+import { EmailBackResolver } from './resolver/emailBack';
 
 
 /* -------------------------------------------------------------------------- */
@@ -33,11 +34,6 @@ const transporter = nodemailer.createTransport({
 		pass: process.env.GMAIL_PASS,
 	},
 });
-
-const SECRET = 'aslkdjlkaj10830912039jlkoaiuwerasdjflkasd';
-const SECRET_2 = 'ajsdklfjaskljgklasjoiquw01982310nlksas;sdlkfj';
-const EMAIL_SECRET = 'asdf1093KMnzxcvnkljvasdu09123nlasdasdf';
-
 
 (async () => {
 
@@ -57,7 +53,9 @@ const EMAIL_SECRET = 'asdf1093KMnzxcvnkljvasdu09123nlasdasdf';
 	};
 
 	const schema = await buildSchema({
-		resolvers: [StaffResolver,DocumentPictureResolver,UserResolver,TransactionResolver,CycleResolver,MonthlyProfitResolver], // add this
+		resolvers: [EmailBackResolver,StaffResolver,DocumentPictureResolver,
+			UserResolver,TransactionResolver,CycleResolver,
+			MonthlyProfitResolver], // add this
 	});
 
 	const server = new ApolloServer({
@@ -74,7 +72,7 @@ const EMAIL_SECRET = 'asdf1093KMnzxcvnkljvasdu09123nlasdasdf';
 	server.applyMiddleware({ app, cors: corsOptions });
 	app.get('/playground', expressPlayground({ endpoint: '/graphql' }));
 
-	app.listen(4000, () => {
+	app.listen(process.env.DOOR, () => {
 		console.log(`
 		🚀  Server is running!
 		🔉  Listening on port 4000

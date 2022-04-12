@@ -1,0 +1,30 @@
+mutation{
+  createEmailBack(data:{
+    name:"ado"
+    email:"pedo"
+    message:"aaaaaaaa"
+  }){
+    field
+    message
+  }
+}
+
+mutation{
+  updateEmail(data:{
+		id:1
+    message:"ooo"
+    name:""
+  }){
+    field
+    message
+  }
+}
+
+mutation{
+  deleteCycle(data:{
+		id:1
+  }){
+    field
+    message
+  }
+}

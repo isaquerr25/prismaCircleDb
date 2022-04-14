@@ -1,5 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import * as yup from 'yup';
+import { NumberTelephoneAlter } from '../dto/user';
 export const validateCreateUser =  async (fetchUser:any) => {
 
 	const resend = [];
@@ -30,12 +32,12 @@ export const HashGenerator =  async ( password: string ) => {
 
 export const validatePassword = (password: string) => {
 	return String(password).match(
-		/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,50}$/
+		/(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/
 	);
 };
 
-const validateEmail = (email: string) => {
-	return String(email)
+const validateEmail = (numberTelephone: string) => {
+	return String(numberTelephone)
 		.toLowerCase()
 		.match(
 			/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -60,6 +62,29 @@ export const createAuthToken = (user:number,role:unknown) => {
 	return token;
 };
 
+export const createWithdrawToken = (withdraw:number,userId:unknown) => {
+	const privateKey:string = process.env.JWT_KEY != undefined ? process.env.JWT_KEY : '';
+	const tokenData = {
+		id: withdraw,
+		userId: userId,
+	};
+	const token = jwt.sign(tokenData, privateKey);
+	
+	return token;
+};
+
+interface JwtWithdraw {
+	id: number;
+	userId:number;
+}
+
+export const decodeTokenTypeWithdraw = (info: any) => {
+
+	return decodeToken(info) as JwtWithdraw;
+};
+
+
+
 export const validateLogin = async (passwordDB:string,password:string,userId:number,role:unknown) => {
 	if (await bcrypt.compare(password, passwordDB)){
 		return await createAuthToken(userId,role);
@@ -68,6 +93,17 @@ export const validateLogin = async (passwordDB:string,password:string,userId:num
 		return null;
 	}
 };
+
+export const validationNumberPhone = (numberTelephone: string) => {
+	return String(numberTelephone)
+		.toLowerCase()
+		.match(/^\+?[0-9]{3}-?[0-9]{6,12}$/);
+};
+
+
+
+
+
 
 export const decodeToken = (token:string) => {
 	// token = token.replace('access-token=','');

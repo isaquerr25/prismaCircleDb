@@ -68,7 +68,7 @@ export const calculatorProfit = (beginDate: Date | null, finishDate: Date | null
 			const ye:string = startDate.getFullYear().toString();
 			const go =  (mo+'-'+ye);
 
-			const percenterProfit = (groupMoth[go] ?? 400)/100/100;
+			const percenterProfit = (groupMoth[go] ?? Number(process.env.PROFIT_STANDARD_MONTH))/100/100;
 			console.log('percenterProfit ',percenterProfit, valuePrice);
 			const dayMoth = daysInMonth(startDate.getMonth(), startDate.getFullYear());
 

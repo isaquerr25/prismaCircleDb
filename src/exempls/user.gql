@@ -1,27 +1,30 @@
 mutation {
 	createUserResolver(
 		data: {
-			email: "test25a@test.com"
+			email: "testaaas25a@test.com"
 			password: "Teste25@"
 			name: "Jaison Manders"
+      numberTelephone:"5566999891"
 		}
 	) {
 		field
 		message
 	}
 }
+
 mutation {
 	loginAuthUser(data: { email: "test25ac@test.com", password: "Teste25@" }) {
 		field
 		message
 	}
 }
+
 query {
 	allUsers {
 		email
 		name
-		password
 		wallet
+    numberTelephone
 	}
 }
 
@@ -40,6 +43,19 @@ mutation {
 		message
 	}
 }
+
+mutation {
+	updateNumberTelephone(
+		data: {
+			numberTelephone:"569120993"
+		}
+	) {
+		field
+		message
+	}
+}
+
+
 query {
 	userInfoDocument {
 		email
@@ -60,4 +76,27 @@ query {
 
 mutation {
 	logout
+}
+
+mutation {
+	resolverForgetPassword(
+		data: {
+			email:"est25ac@test.com"
+		}
+	) {
+		field
+		message
+	}
+}
+
+mutation {
+	newPassword(
+		data: {
+      token:""
+			password:""
+		}
+	) {
+		field
+		message
+	}
 }

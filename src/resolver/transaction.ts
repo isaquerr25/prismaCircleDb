@@ -2,12 +2,14 @@ import { PrismaClient } from '@prisma/client';
 import { Resolver, Query, Mutation, Arg, Ctx, UseMiddleware } from 'type-graphql';
 import { InputDeleteTransaction, InputNewTransaction, TransactionAll, InputUpdateTransaction, RequestDeposit, InputTypeTransaction, TransactionUser } from '../dto/transaction';
 import { GraphState } from '../dto/utils';
-import { getTokenId } from '../utils';
+import { createWithdrawToken, getTokenId } from '../utils';
 import { valueInCash } from './utils';
 import clientPayments from '../payments/centerPayments';
 import convert from '../payments/convert';
 import { createTransactionPayment } from '../payments/deposit';
 import { isManagerAuth } from '../middleware/isManagerAuth';
+import { listeners } from 'process';
+import { emailWithdrawConfirmSend } from '../systemEmail';
 export const prisma = new PrismaClient();
 
 @Resolver()
@@ -96,7 +98,22 @@ export class TransactionResolver {
 		if (stateReturn.length == 0) {
 			try {
 				data.userId = idValid;
-				const createUser = await prisma.transaction.create({data});
+				let createUser:any;
+				if(data.action ==  'WITHDRAW'){
+
+					createUser = await prisma.transaction.create({data:{
+						action:'WAITPROCESS',
+						value:data.value,
+						valueBTC:data.valueBTC,
+						hash:data.hash,
+						wallet:data.wallet,
+						userId:data.userId
+					}});
+					await emailWithdrawConfirmSend(createUser,user.email);
+				}else{
+					createUser = await prisma.transaction.create({data});
+
+				}
 				console.log(createUser);
 				stateReturn.push({
 					field: 'success',

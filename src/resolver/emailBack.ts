@@ -26,7 +26,13 @@ export class EmailBackResolver {
 
 	@Mutation(()=> GraphState)
 	async createEmailBack(@Arg('data', () => InputEmailBack) data: InputEmailBack){
-
+		
+		if(data.email==''||data.name==''||data.message==''){
+			return{
+				field: 'create',
+				message: 'Need to fill in all fields',
+			};
+		}
 	
 
 		try {

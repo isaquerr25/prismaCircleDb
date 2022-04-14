@@ -12,6 +12,8 @@ export class UserAll {
 		name?: string | null;
 	@Field(() => String, { nullable: true })
 		wallet?: string | null;
+	@Field(() => String, { nullable: true })
+		numberTelephone?: string | null;
 }
 
 
@@ -27,6 +29,8 @@ export class UserHaveComponents {
 		document?: string;
 	@Field(() => BigInt, { nullable: true })
 		valuePrice?: BigInt| null;
+	@Field(() => String, { nullable: true })
+		numberTelephone?: string | null;
 }
 
 @ObjectType()
@@ -50,6 +54,8 @@ export class CreateUser {
 
 	@Field(() => String)
 		password!: string;
+	@Field(() => String,{nullable:true})
+		numberTelephone?: string | null ;
 }
 
 @InputType()
@@ -71,4 +77,25 @@ export class PasswordAlter {
 export class WalletAlter {
 	@Field(() => String)
 		wallet!: string;
+}
+
+@InputType()
+export class NumberTelephoneAlter {
+	@Field(() => String)
+		numberTelephone!: string;
+}
+
+
+@InputType()
+export class ForgetPasswordAlter {
+	@Field(() => String)
+		email!: string;
+}
+
+@InputType()
+export class ForgetPasswordNewAlter {
+	@Field(() => String)
+		token!: string;
+	@Field(() => String)
+		password!: string;
 }

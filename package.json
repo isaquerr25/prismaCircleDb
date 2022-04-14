@@ -59,6 +59,7 @@
 		"shortid": "^2.2.16",
 		"ts-node-dev": "^1.1.8",
 		"type-graphql": "^1.1.1",
-		"upload": "^1.1.1"
+		"upload": "^1.1.1",
+		"yup": "^0.32.11"
 	}
 }

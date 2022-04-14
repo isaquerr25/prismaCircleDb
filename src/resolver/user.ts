@@ -2,13 +2,13 @@ import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { Resolver, Query, Mutation, Arg, Ctx, UseMiddleware } from 'type-graphql';
 import { GraphState } from '../dto/utils';
-import { CreateUser, LoginUser, PasswordAlter, UserAll, UserCash, UserHaveComponents, WalletAlter } from '../dto/user';
-import { getTokenId, HashGenerator, validateCreateUser, validateLogin, validatePassword } from '../utils';
+import { CreateUser, LoginUser, PasswordAlter, UserAll, UserCash, UserHaveComponents, WalletAlter, NumberTelephoneAlter, ForgetPasswordAlter, ForgetPasswordNewAlter } from '../dto/user';
+import { decodeTokenType, getTokenId, HashGenerator, validateCreateUser, validateLogin, validatePassword, validationNumberPhone } from '../utils';
 import { validate } from 'bitcoin-address-validation';
 import { profitCycle, profitFuture, valueInCash } from './utils';
 import { isUserAuth } from '../middleware/isUserAuth';
 import { isManagerAuth } from '../middleware/isManagerAuth';
-import emailValidSend from '../systemEmail';
+import emailValidSend, { emailForgetPasswordSend } from '../systemEmail';
 export const prisma = new PrismaClient();
 
 
@@ -65,19 +65,54 @@ export class UserResolver {
 
 	@Mutation(() => [GraphState])
 	async createUserResolver(@Arg('data', () => CreateUser) data: CreateUser) {
-		console.log('await');
-		console.log(await validateCreateUser(data));
+
 		const stateReturn = await validateCreateUser(data);
 
+		if(data.numberTelephone == null){
+			stateReturn.push({
+				field: 'error',
+				message: 'Number Telephone is Null',
+			});
+
+			return stateReturn;
+
+		}
+
+		const numberValid = validationNumberPhone(data.numberTelephone!);
+
+		if (!numberValid){
+			stateReturn.push({
+				field: 'number',
+				message: 'Number Telephone not Valid',
+			});
+
+			return stateReturn;
+		}
+
+		if (await prisma.user.findFirst({ where: { numberTelephone: data.numberTelephone } })) {
+			
+			stateReturn.push({
+				field: 'error',
+				message: 'Number Telephone already exists',
+			});
+			
+			return stateReturn;
+
+		}
+			
 		if (await prisma.user.findFirst({ where: { email: data.email } })) {
+
 			stateReturn.push({
 				field: 'error',
 				message: 'this email already exists',
 			});
-			return stateReturn;
-		}
 
+			return stateReturn;
+
+		}
+		
 		if (stateReturn.length == 0) {
+
 			try {
 				data.password = await HashGenerator(data.password);
 				const createUser = await prisma.user.create({ data });
@@ -87,20 +122,27 @@ export class UserResolver {
 					field: 'create',
 					message: 'success',
 				});
+
 			} catch {
+
 				stateReturn.push({
 					field: 'create',
 					message: 'error',
 				});
+
 			}
+
 		} else {
+
 			stateReturn.push({
 				field: 'create',
 				message: 'contact the support',
 			});
+
 		}
 
 		return stateReturn;
+
 	}
 
 
@@ -278,7 +320,57 @@ export class UserResolver {
 		}
 	}
 
+	@UseMiddleware(isUserAuth)
+	@Mutation(() => GraphState, { nullable: true })
+	async updateNumberTelephone(
 
+		@Arg('data', () => NumberTelephoneAlter) data: NumberTelephoneAlter,
+		@Ctx() ctx: any	)
+	{
+		let newValidateUser = {};
+
+		const currentToken = getTokenId(ctx)?.userId;
+		const newUser = await prisma.user.findFirst({
+			where: { id: currentToken},
+		});
+
+		if (!currentToken || !newUser){
+			newValidateUser = {
+				field: 'account',
+				message: 'Account not exist',
+			};
+			return newValidateUser;
+		}
+		const validNumberTelephone =validationNumberPhone(data.numberTelephone);
+
+		if (validNumberTelephone) {
+			console.log('asd');
+			if (currentToken != null) {
+				console.log('await');
+				try {
+
+					await prisma.user.update({
+						where: { id: currentToken },
+						data: { numberTelephone: data.numberTelephone },
+					});
+
+					return { field: 'success', message: 'change Number' };
+
+				} catch (errors) {
+
+					return { field: 'Number', message: errors };
+				}
+			}
+			else {
+				return { field: 'Server', message: 'Do not have access' };
+			}
+		} else {
+			return {
+				field: 'Number',
+				message:'Number invalid, try another Number',
+			};
+		}
+	}
 
 	@Mutation(()=>Boolean,{nullable:true})
 	async logout(@Ctx() ctx: any) {
@@ -309,4 +401,67 @@ export class UserResolver {
 
 	}
 
+
+	@Mutation(() => GraphState, { nullable: true })
+	async resolverForgetPassword(
+
+		@Arg('data', () => ForgetPasswordAlter) data: ForgetPasswordAlter)
+	{
+		let newValidateUser = {};
+		const newUser = await prisma.user.findFirst({
+			where: { email: data.email},
+		});
+		
+		if(newUser==null){
+			newValidateUser = {
+				field: 'account',
+				message: 'Account not exist',
+			};
+			return newValidateUser;
+		}
+		const emailSendBack = await emailForgetPasswordSend(newUser);
+		if(emailSendBack == 'success'){
+			newValidateUser = {
+				field: 'success',
+				message: 'Email Send',
+			};
+			return newValidateUser;
+		}
+
+		newValidateUser = {
+			field: 'Error',
+			message: 'Try later',
+		};
+
+		return newValidateUser;
+	}
+
+	@Mutation(() => GraphState, { nullable: true })
+	async newPassword(@Arg('data', () => ForgetPasswordNewAlter) data: ForgetPasswordNewAlter)
+	{
+		let newValidateUser = {};
+
+		const currentToken = decodeTokenType(data.token).userId;
+		const newUser = await prisma.user.findFirst({
+			where: { id: currentToken },
+		});
+		if (!currentToken || !newUser){
+			newValidateUser = {
+				field: 'password',
+				message: 'Account not exist',
+			};
+			return newValidateUser;
+		}
+
+		const newPassword= await HashGenerator(data.password);
+		try {
+			await prisma.user.update({
+				where: { id: currentToken },
+				data: { password: newPassword },
+			});
+			return { field: 'success', message: 'change password' };
+		} catch (errors) {
+			return { field: 'update', message: errors };
+		}
+	}
 }

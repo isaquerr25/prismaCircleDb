@@ -127,3 +127,10 @@ export class TransactionUser {
 	@Field(() => UserAll)
 		user?: UserAll;
 }
+
+
+@InputType()
+export class InputValidateWithdrawTransaction {
+	@Field(() => String)
+		token!: string;
+}

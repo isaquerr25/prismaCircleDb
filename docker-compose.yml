@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+      - "15432:15432"
+    volumes:
+      - .:/usr/app
+    context: contextPath
+    dockerfile: Dockerfile

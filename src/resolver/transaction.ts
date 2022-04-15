@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import { Resolver, Query, Mutation, Arg, Ctx, UseMiddleware } from 'type-graphql';
-import { InputDeleteTransaction, InputNewTransaction, TransactionAll, InputUpdateTransaction, RequestDeposit, InputTypeTransaction, TransactionUser } from '../dto/transaction';
+import { InputDeleteTransaction, InputNewTransaction, TransactionAll, InputUpdateTransaction, RequestDeposit, InputTypeTransaction, TransactionUser, InputValidateWithdrawTransaction } from '../dto/transaction';
 import { GraphState } from '../dto/utils';
-import { createWithdrawToken, getTokenId } from '../utils';
+import { createWithdrawToken, decodeTokenTypeWithdraw, getTokenId } from '../utils';
 import { valueInCash } from './utils';
 import clientPayments from '../payments/centerPayments';
 import convert from '../payments/convert';
@@ -10,6 +10,7 @@ import { createTransactionPayment } from '../payments/deposit';
 import { isManagerAuth } from '../middleware/isManagerAuth';
 import { listeners } from 'process';
 import { emailWithdrawConfirmSend } from '../systemEmail';
+import { createHash } from './document';
 export const prisma = new PrismaClient();
 
 @Resolver()
@@ -72,7 +73,7 @@ export class TransactionResolver {
 			return stateReturn;
 		}
 
-		if(data.value < 5000 || data.wallet ==''){
+		if(data.value < 5000 || data.wallet ==''|| data.wallet ==null){
 
 			if (data.value < 5000 ) {
 				stateReturn.push({
@@ -80,7 +81,7 @@ export class TransactionResolver {
 					message: 'value below necessary',
 				});
 			}
-			if (data.wallet =='') {
+			if (data.wallet ==''|| data.wallet ==null) {
 				stateReturn.push({
 					field: 'wallet',
 					message: 'null',
@@ -102,14 +103,15 @@ export class TransactionResolver {
 				if(data.action ==  'WITHDRAW'){
 
 					createUser = await prisma.transaction.create({data:{
-						action:'WAITPROCESS',
+						action:data.action,
 						value:data.value,
 						valueBTC:data.valueBTC,
-						hash:data.hash,
+						hash: 'with_draw_'+createHash(),
 						wallet:data.wallet,
-						userId:data.userId
+						userId:data.userId,
+						state:'WAIT_VALIDATION_EMAIL'
 					}});
-					await emailWithdrawConfirmSend(createUser,user.email);
+					await emailWithdrawConfirmSend(createUser,user.email,user.wallet!);
 				}else{
 					createUser = await prisma.transaction.create({data});
 
@@ -369,5 +371,31 @@ export class TransactionResolver {
 			where: { state: data.state , action: data.action},
 			include:{user:true}
 		});
+	}
+	
+	@Mutation(()=> GraphState)
+	async validWithdraw(@Arg('data', () => InputValidateWithdrawTransaction)
+		data: InputValidateWithdrawTransaction){
+
+		console.log(data.token);
+		const responseToken = decodeTokenTypeWithdraw(data.token);
+		console.log(responseToken);
+		try {
+			
+			await prisma.transaction.update({
+				where: { id: responseToken.id},
+				data:{state:'PROCESS'}
+			});
+			return {
+				field: 'success',
+				message: 'Transaction In Process',
+			};
+
+		} catch (error) {
+			return {
+				field: 'error',
+				message: 'Transaction error',
+			};
+		}
 	}
 }

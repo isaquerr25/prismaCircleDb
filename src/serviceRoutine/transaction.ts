@@ -1,9 +1,21 @@
 import { GetTransaction,GetMultiTransaction } from '../payments/deposit';
 import clientPayments from '../payments/centerPayments';
+import { addDays } from 'date-fns';
 
 export const consultFinishTransaction = async(prisma:any) => {
 
 	const allIncompleteTransaction = await prisma.transaction.findMany({ where:{ state:'PROCESS', action:'DEPOSIT',NOT:[{hash: null},{wallet: 'internal'}]}} );
+	const fakeTransaction = await prisma.transaction.findMany({ where:{ state:'WAIT_VALIDATION_EMAIL',createdAt:{lte:addDays(new Date(),-1)} }} );
+	if(fakeTransaction.length > 0){
+		for(const hashAlone of fakeTransaction){
+			prisma.transaction.update({
+				where:{id:hashAlone.id},
+				data:{state:'PROCESS'}
+			}).then((result: any)=>{console.log(result);})
+				.catch((error: any)=>{console.log(error);});
+		}
+	}
+	
 	if(allIncompleteTransaction.length > 0){
 
 		const TxMultiHash = [];
@@ -13,7 +25,6 @@ export const consultFinishTransaction = async(prisma:any) => {
 		}
 
 		try{
-			console.log(TxMultiHash);
 			const arrayResult = await GetMultiTransaction( clientPayments(),TxMultiHash);
 
 

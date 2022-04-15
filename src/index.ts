@@ -25,7 +25,7 @@ import { EmailBackResolver } from './resolver/emailBack';
 /*         NOTE ativar novamente         */
 /* -------------------------------------------------------------------------- */
 
-// serviceRoutine();
+serviceRoutine();
 
 const transporter = nodemailer.createTransport({
 	service: 'Gmail',
@@ -38,7 +38,7 @@ const transporter = nodemailer.createTransport({
 (async () => {
 
 	const corsOptions = {
-		origin: ['http://localhost:3000','http://localhost:4000'],
+		origin: [`${process.env.FRONT_IP}`,'http://localhost:4000'],
 		credentials: true,
 		optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 	};

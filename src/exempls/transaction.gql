@@ -110,3 +110,12 @@ mutation{
 
   }
 }
+
+mutation{
+  validWithdraw(data:{
+    token:""
+  }){
+    field
+    message
+  }
+}

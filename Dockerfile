@@ -1,12 +1,16 @@
-FROM node:17
+FROM node:16.3.0
 
 WORKDIR /usr/app
-COPY package.json yarn.lock ./
+ARG PORT
+COPY ./package.json  ./
+COPY ./yarn.lock ./
 
-RUN yarn
+COPY . .
+COPY ./.env ./.env
 
-COPY . . 
+# RUN yarn
 
-EXPOSE 3000
+EXPOSE ${DOOR}
+# Running the app
 
-CMD ["yarn","start"]
+CMD [ "yarn", "start" ]

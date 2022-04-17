@@ -9,6 +9,7 @@ import { profitCycle, profitFuture, valueInCash } from './utils';
 import { isUserAuth } from '../middleware/isUserAuth';
 import { isManagerAuth } from '../middleware/isManagerAuth';
 import emailValidSend, { emailForgetPasswordSend } from '../systemEmail';
+import { number } from 'yup';
 export const prisma = new PrismaClient();
 
 
@@ -30,7 +31,12 @@ export class UserResolver {
 	@Query(() => UserHaveComponents, { nullable: true })
 	async userInfoDocument(@Ctx() ctx: any) {
 
-		const validStateDocument = {INVALID:0,PROCESS:1,VALID:2};
+
+		const validStateDocument: {
+    INVALID: number;
+    PROCESS: number;
+    VALID: number;
+		} = {INVALID:0,PROCESS:1,VALID:2};
 
 		const currentToken = getTokenId(ctx)?.userId;
 		console.log(getTokenId(ctx));

@@ -1,6 +1,6 @@
 import { ObjectType, Field, InputType, Int } from 'type-graphql';
 import BigInt from 'graphql-bigint';
-import { DepositState, GraphState } from './utils';
+import { DepositState } from './utils';
 import { UserAll } from './user';
 // enum TransactionActionTypes {
 //   WITHDRAW

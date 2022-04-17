@@ -2,11 +2,12 @@ version: '3'
 
 services:
   app:
-    build: .
+    container_name: ${CONTAINER_NAME}
+    build: 
+      context: ./
+      dockerfile: ./Dockerfile
+    command: sh -c "npm install && npm run start"
     ports:
-      - "3000:3000"
-      - "15432:15432"
-    volumes:
-      - .:/usr/app
-    context: contextPath
-    dockerfile: Dockerfile
+      - ${APP_PORT_V}:${APP_PORT}
+    env_file: ./.env
+    

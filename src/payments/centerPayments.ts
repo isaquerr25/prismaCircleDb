@@ -32,7 +32,7 @@ export default () => {
 // 	amount: 0.0002,
 // 	buyer_email: 'animestuds@gmail.com',
 // 	buyer_name: 'nullaaa',
-// 	item_name: 'Deposit Storm Invent',
+// 	item_name: 'Deposit Tempest Invent',
 // 	item_number: 5,
 // 	invoice: 'null',
 // 	custom: 'c',

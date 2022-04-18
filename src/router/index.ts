@@ -34,8 +34,10 @@ routes.use('/static', function(req,res, next) {
 
 routes.use('/static', express.static(path.join(__dirname,'../../images/')));
 
-routes.get('/confirmation/:tokenID', async function(req, res) {
+routes.get('/confirmation_emial/:tokenID', async function(req, res) {
 	res.header('Access-Control-Allow-Origin','*');
+	
+
 	const idPrimary = decodeTokenType(req.params.tokenID).userId;
 	console.log(process.env.FRONT_IP!);
 	console.log(idPrimary);
@@ -45,7 +47,8 @@ routes.get('/confirmation/:tokenID', async function(req, res) {
 				where: { id: idPrimary },
 				data: { confirm: 'valid' },
 			});
-			return res.redirect(`${process.env.FRONT_IP!}/home/login`);
+			
+			return res.send('valid');
 		}catch(error){
 			console.log(error);
 			res.status(404);

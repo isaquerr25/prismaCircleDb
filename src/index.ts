@@ -38,19 +38,19 @@ const transporter = nodemailer.createTransport({
 (async () => {
 
 	const corsOptions = {
-		origin: [`${process.env.FRONT_IP}`,'http://localhost:4000'],
+		origin: [`${process.env.FRONT_IP}`,`${process.env.IP}:${process.env.DOOR}`],
 		credentials: true,
 		optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 	};
-	const corsPicture = {
-		origin: 'http://localhost:4000',
-		credentials: true,
-		optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
-	};
-	const corsplayground = {
-		origin: 'https://studio.apollographql.com',
-		credentials: true
-	};
+	// const corsPicture = {
+	// 	origin: 'http://localhost:4000',
+	// 	credentials: true,
+	// 	optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+	// };
+	// const corsplayground = {
+	// 	origin: 'https://studio.apollographql.com',
+	// 	credentials: true
+	// };
 
 	const schema = await buildSchema({
 		resolvers: [EmailBackResolver,StaffResolver,DocumentPictureResolver,
@@ -63,13 +63,12 @@ const transporter = nodemailer.createTransport({
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		context: ({ req, res }: any) => ({ req, res }),
 	});
-
 	await server.start();
 	const app = express();
 	app.use(cookieParser());
 	app.use(routes);
 	app.use(graphqlUploadExpress());
-	server.applyMiddleware({ app, cors: corsOptions });
+	server.applyMiddleware({ app, cors:corsOptions });
 	app.get('/playground', expressPlayground({ endpoint: '/graphql' }));
 
 	app.listen(process.env.DOOR, () => {

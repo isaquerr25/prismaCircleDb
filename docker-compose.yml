@@ -6,7 +6,7 @@ services:
     build: 
       context: ./
       dockerfile: ./Dockerfile
-    command: sh -c "yarn install && yarn migrate deploy && yarn start"
+    command: sh -c "yarn install && yarn prisma migrate deploy && yarn start"
     ports:
       - ${APP_PORT_V}:${APP_PORT}
     env_file: ./.env

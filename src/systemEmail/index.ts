@@ -7,8 +7,7 @@ import sgMail from '@sendgrid/mail';
 const  emailValidSend = async(user:any) =>{
 
 	const token = createAuthToken(user.id,user.role);
-	const url = `${process.env.FRONT_IP}/confirmation/${token}`;
-	console.log(process.env.SENDGRID_API_KEY!);
+	const url = `https://www.tempestinvest.com/confirmation/${token}`;
 	sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 	const msg = {
 		to: user.email, // Change to your recipient
@@ -28,8 +27,7 @@ const  emailValidSend = async(user:any) =>{
 export const  emailForgetPasswordSend = async(user:any) =>{
 
 	const token = createAuthToken(user.id,user.role);
-	const url = `${process.env.FRONT_IP}/newPassword/${token}`;
-	console.log(process.env.SENDGRID_API_KEY!);
+	const url = `https://www.tempestinvest.com/newPassword/${token}`;
 	sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
 	const msg = {
@@ -49,7 +47,7 @@ export const  emailForgetPasswordSend = async(user:any) =>{
 export const  emailWithdrawConfirmSend = async(transaction:any,email:string,wallet:string) =>{
 
 	const token = createWithdrawToken(transaction.id,transaction.userId);
-	const url = `${process.env.FRONT_IP}/user/withdraw/valid/${token}`;
+	const url = `https://www.tempestinvest.com/user/withdraw/valid/${token}`;
 	console.log(process.env.SENDGRID_API_KEY!);
 	sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 

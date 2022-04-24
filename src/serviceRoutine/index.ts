@@ -4,8 +4,6 @@ import { consultFinishCycle } from './cycles';
 export const prisma = new PrismaClient();
 
 
-
-
 export default ()=>{
 
 	(async function routines (){

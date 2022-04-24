@@ -54,7 +54,7 @@ const validateName = (name: string) => {
 export const createAuthToken = (user:number,role:unknown) => {
 	const privateKey:string = process.env.JWT_KEY != undefined ? process.env.JWT_KEY : '';
 	const tokenData = {
-		
+		exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24),
 		userId: user,
 		role: role,
 	};
@@ -66,7 +66,7 @@ export const createAuthToken = (user:number,role:unknown) => {
 export const createWithdrawToken = (withdraw:number,userId:number) => {
 	const privateKey:string = process.env.JWT_KEY != undefined ? process.env.JWT_KEY : '';
 	const tokenData = {
-		
+		exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24),
 		id: withdraw,
 		userId: userId,
 	};

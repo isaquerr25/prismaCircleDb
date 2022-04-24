@@ -9,10 +9,12 @@ export class EmailAll {
 		id?: number;
 	@Field(() => String)
 		name?: string;
-	@Field(() => Int)
-		email?: number;
+	@Field(() => String)
+		email?: string;
 	@Field(() => String)
 		message?: string;
+	@Field(() => Date, { nullable: true })
+		createdAt?: Date;
 }
 
 @InputType()

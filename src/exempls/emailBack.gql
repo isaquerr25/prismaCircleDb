@@ -1,3 +1,13 @@
+query{
+  allEmail{
+    id
+    name
+    email
+    message
+    createdAt
+  }
+}
+
 mutation{
   createEmailBack(data:{
     name:"ado"

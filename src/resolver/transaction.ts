@@ -137,8 +137,6 @@ export class TransactionResolver {
 		return stateReturn;
 	}
 
-
-
 	/* -------------------------------------------------------------------------- */
 	/*                               Create Deposit                               */
 	/* -------------------------------------------------------------------------- */
@@ -176,41 +174,14 @@ export class TransactionResolver {
 			return stateReturn;
 		}
 
-		if(user.wallet == ''){
-			stateReturn.status.push({
-				field: 'wallet',
-				message: 'Add a wallet to your profile and then continue this transaction',
-			});
-			return stateReturn;
-		}
-
-		data.wallet = user.wallet == null ? '' : user.wallet;
-
-		if(data.wallet == ''){
-			stateReturn.status.push({
-				field: 'wallet',
-				message: 'Add a wallet to your profile and then continue this transaction',
-			});
-			return stateReturn;
-		}
-		console.log(stateReturn);
-
-		if(data.value <5000 || data.wallet ==''){
-
+		if(data.value <5000){
 			if (data.value < 5000 ) {
 				stateReturn.status.push({
 					field: 'value',
 					message: 'value below necessary',
 				});
 			}
-			if (data.wallet =='') {
-				stateReturn.status.push({
-					field: 'wallet',
-					message: 'null',
-				});
-			}
 		}
-		console.log(stateReturn);
 
 		if (stateReturn.status.length == 0){
 			try{
@@ -247,7 +218,6 @@ export class TransactionResolver {
 				message: 'contact the support',
 			});
 		}
-		console.log(stateReturn);
 		return stateReturn;
 	}
 

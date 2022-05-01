@@ -58,9 +58,15 @@ const transporter = nodemailer.createTransport({
 	// };
 
 	const schema = await buildSchema({
-		resolvers: [EmailBackResolver,StaffResolver,DocumentPictureResolver,
-			UserResolver,TransactionResolver,CycleResolver,
-			MonthlyProfitResolver], // add this
+		resolvers: [
+			EmailBackResolver,
+			StaffResolver,
+			DocumentPictureResolver,
+			UserResolver,
+			TransactionResolver,
+			CycleResolver,
+			MonthlyProfitResolver
+		], // add this
 	});
 
 	const server = new ApolloServer({

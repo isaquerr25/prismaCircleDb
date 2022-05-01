@@ -1,18 +1,60 @@
+//total deposit
 
 mutation {
 	createCycle(
 		data: {
-			action: "invest"
-			valueUSD: 300
-			beginDate: "2010-12-03T10:15:30Z"
-			finishDate: "2011-02-03T10:15:30Z"
+			valueUSD: 5000
+      useMoney:false
+      moneyUser:0
+      days:"cycle30"
 		}
 	) {
-		field
-		message
+		url
+    status{
+      field
+      message
+    }
+    
 	}
 }
 
+//total parcial deposit
+mutation {
+	createCycle(
+		data: {
+			valueUSD: 5000
+      useMoney:true
+      moneyUser:20
+      days:"cycle30"
+		}
+	) {
+		url
+    status{
+      field
+      message
+    }
+    
+	}
+}
+
+//total re-investimnet
+mutation {
+	createCycle(
+		data: {
+			valueUSD: 5000
+      useMoney:true
+      moneyUser:5000
+      days:"cycle30"
+		}
+	) {
+		url
+    status{
+      field
+      message
+    }
+    
+	}
+}
 
 mutation{
   deleteCycle(data:{

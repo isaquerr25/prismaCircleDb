@@ -38,19 +38,19 @@ export class CycleAllUser {
 
 	@Field(() => Int)
 		id?: number;
-	@Field(() => String)
+	@Field(() => String, { nullable: true })
 		action?: string;
-	@Field(() => Int)
+	@Field(() => Int, { nullable: true })
 		valueUSD?: number;
-	@Field(() => String)
+	@Field(() => String, { nullable: true })
 		valueBTC?: string;
 	@Field(() => Int, { nullable: true })
 		finalValueUSD?: number;
 	@Field(() => String, { nullable: true })
 		finalValueBTC?: BigInt;
-	@Field(() => String)
+	@Field(() => String, { nullable: true })
 		state?: string;
-	@Field(() => Date)
+	@Field(() => Date, { nullable: true })
 		beginDate?: Date;
 	@Field(() => Date, { nullable: true })
 		finishDate?: Date;
@@ -58,7 +58,7 @@ export class CycleAllUser {
 		createdAt?: Date;
 	@Field(() => Date, { nullable: true })
 		updatedAt?: Date;
-	@Field(() => UserAll)
+	@Field(() => UserAll, { nullable: true })
 		user?: UserAll;
 	@Field(() => String, { nullable: true })
 		hash?: string;
@@ -66,21 +66,15 @@ export class CycleAllUser {
 
 @InputType()
 export class InputNewCycle {
-
-	@Field(() => String, { nullable: true })
-		action?: string;
+	
 	@Field(() => Int)
 		valueUSD!: number;
-	@Field(() => String, { nullable: true })
-		valueBTC?: string;
-	@Field(() => Date)
-		beginDate!: Date;
-	@Field(() => Date)
-		finishDate!: Date;
+	@Field(() => Boolean)
+		useMoney!: boolean;
 	@Field(() => Int, { nullable: true })
-		userId!: number;
-	@Field(() => String, { nullable: true })
-		hash!: string;
+		moneyUser?: number;
+	@Field(() => String )
+		days!: string ;
 }
 
 

@@ -61,7 +61,8 @@ mutation{
   createDeposit(
     data:{
       action: "DEPOSIT"
-      value:500
+      value:5000
+      days:"cycle30"
     }
   ){
     url

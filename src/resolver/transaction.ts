@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { Resolver, Query, Mutation, Arg, Ctx, UseMiddleware } from 'type-graphql';
-import { InputDeleteTransaction, InputNewTransaction, TransactionAll, InputUpdateTransaction, RequestDeposit, InputTypeTransaction, TransactionUser, InputValidateWithdrawTransaction } from '../dto/transaction';
+import { InputDeleteTransaction, InputNewTransaction, TransactionAll, InputUpdateTransaction, RequestDeposit, InputTypeTransaction, TransactionUser, InputValidateWithdrawTransaction, InputNewDeposit } from '../dto/transaction';
 import { GraphState } from '../dto/utils';
 import { createWithdrawToken, decodeTokenTypeWithdraw, getTokenId } from '../utils';
 import { valueInCash } from './utils';
@@ -33,8 +33,8 @@ export class TransactionResolver {
 	/*                             Create Transaction                             */
 	/* -------------------------------------------------------------------------- */
 	@Mutation(()=> [GraphState])
-	async createTransaction(@Arg('data', () => InputNewTransaction)
-		data: InputNewTransaction,@Ctx() ctx: any){
+	async createTransaction(@Arg('data', () => InputNewDeposit)
+		data: InputNewDeposit,@Ctx() ctx: any){
 
 		const stateReturn = [];
 		const idValid = getTokenId(ctx)?.userId;
@@ -142,8 +142,8 @@ export class TransactionResolver {
 	/* -------------------------------------------------------------------------- */
 
 	@Mutation(()=> RequestDeposit)
-	async createDeposit(@Arg('data', () => InputNewTransaction)
-		data: InputNewTransaction,@Ctx() ctx: any){
+	async createDeposit(@Arg('data', () => InputNewDeposit)
+		data: InputNewDeposit,@Ctx() ctx: any){
 		interface stateReturnType{
 				url:string
 				status:{field?:string,message?:string}[]
@@ -182,7 +182,12 @@ export class TransactionResolver {
 				});
 			}
 		}
-
+		if(!(data.days.includes('cycle30') || data.days.includes('cycle60') || data.days.includes('cycle120'))){
+			stateReturn.status.push({
+				field: 'create deposit',
+				message: 'Days does not match correct',
+			});
+		}
 		if (stateReturn.status.length == 0){
 			try{
 				const valueBtcNow = await convert(data.value);
@@ -193,15 +198,30 @@ export class TransactionResolver {
 					buyer_email: user.email
 				};
 				const objTransactionPayment =  await createTransactionPayment( clientPayments(),objDeposit);
+				console.log('createUser');
 
 				data.userId = idValid;
-				data.hash = objTransactionPayment.txn_id;
+				data.hash = data.days+'_'+objTransactionPayment.txn_id;
 				data.valueBTC = objTransactionPayment.amount;
+				console.log('vvvv');
+				await prisma.transaction.create({
+					data:{
+						action: 'DEPOSIT',
+						value: data.value,
+						valueBTC: data.valueBTC,
+						hash: data.hash,
+						wallet: user.wallet ?? '',
+						userId: idValid								
+					}
+				
+				})
+					.then((result)=>console.log(result))
+					.catch((error)=>console.log(' error ',error));
+				
+				console.log(' cccc');
 
-				const createUser = await prisma.transaction.create({data});
-
-				console.log(createUser);
 				stateReturn.url = objTransactionPayment.status_url;
+				console.log(' sssc');
 				stateReturn.status.push({
 					field: 'success',
 					message: 'Click on the button to go to the payment screen' ,

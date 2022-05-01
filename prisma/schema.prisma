@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://tempest:vXtbfrlsDSzneWFheo0F@185.227.110.67:15432/tempest"
 }
 
 enum Role {
@@ -75,8 +75,8 @@ model Cycle {
   finalValueUSD Int?
   finalValueBTC String?
   state         String   @default("PROCESS")
-  beginDate     DateTime
-  finishDate    DateTime
+  beginDate     DateTime?
+  finishDate    DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   user          User     @relation("UserCycle ", fields: [userId], references: [id])

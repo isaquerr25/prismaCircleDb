@@ -58,9 +58,28 @@ export class InputNewTransaction {
 		wallet!: string ;
 	@Field(() => Int , { nullable: true })
 		userId!: number ;
-
+	@Field(() => String , { nullable: true })
+		days!: string ;
 }
 
+@InputType()
+export class InputNewDeposit {
+
+	@Field(() => String)
+		action!: 'WITHDRAW' | 'DEPOSIT' | 'INVEST';
+	@Field(() => Int)
+		value!: number;
+	@Field(() => String, { nullable: true })
+		valueBTC?: string | null;
+	@Field(() => String, { nullable: true })
+		hash?: string | null;
+	@Field(() => String, { nullable: true })
+		wallet!: string ;
+	@Field(() => Int , { nullable: true })
+		userId!: number ;
+	@Field(() => String )
+		days!: 'cycle30'|'cycle60'|'cycle120' ;
+}
 @InputType()
 export class InputUpdateTransaction {
 

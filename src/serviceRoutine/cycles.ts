@@ -45,7 +45,7 @@ export const consultFinishCycle = async(prisma:any) => {
 
 			}).then( async(result: unknown)=>{
 				await prisma.transaction.create({data:{
-					action:'COMPLETE_INVEST',
+					action:'COMPLETE_CYCLE',
 					value:Math.round(profitFinal),
 					valueBTC:'-',
 					state:'COMPLETE',

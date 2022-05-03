@@ -218,8 +218,8 @@ export class StaffResolver {
 		userSend.allWithdraw = getTypeTransition(groupTransaction,'WITHDRAW',false).toString();
 		userSend.qInvest = getTypeTransition(groupTransaction,'INVEST').toString();
 		userSend.allInvest = getTypeTransition(groupTransaction,'INVEST',false).toString();
-		userSend.qCompleteInvest = getTypeTransition(groupTransaction,'COMPLETE_INVEST').toString();
-		userSend.allCompleteInvest = getTypeTransition(groupTransaction,'COMPLETE_INVEST',false).toString();
+		userSend.qCompleteInvest = getTypeTransition(groupTransaction,'COMPLETE_CYCLE').toString();
+		userSend.allCompleteInvest = getTypeTransition(groupTransaction,'COMPLETE_CYCLE',false).toString();
 
 		userSend.qCycleCancel = getTypeCycle(groupCycle,'CANCEl').toString();
 		userSend.qCycleProcess = getTypeCycle(groupCycle,'PROCESS').toString();
@@ -237,7 +237,7 @@ export class StaffResolver {
 
 const getTypeTransition = (
 	arrayNow:[]|any,
-	type:'DEPOSIT'|'WITHDRAW'|'INVEST'|'COMPLETE_INVEST',
+	type:'DEPOSIT'|'WITHDRAW'|'INVEST'|'COMPLETE_CYCLE',
 	lent=true) =>{
 	
 	let cont =0;

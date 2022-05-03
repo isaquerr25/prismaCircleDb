@@ -5,8 +5,7 @@ import console from 'console';
 
 export const consultFinishTransaction = async(prisma:any) => {
 	console.log('consultFinishTransaction');
-	const allIncompleteTransaction = await prisma.transaction.findMany({ where:{ state:'PROCESS', action:'DEPOSIT',NOT:[{hash: null},{wallet: 'internal'}]}} );
-	console.log('allIncompleteTransaction  ',allIncompleteTransaction);
+	const allIncompleteTransaction = await prisma.transaction.findMany({ where:{ state:'PROCESS', action:'DEPOSIT',NOT:[{hash: null}]}} );
 	try{
 		const fakeTransaction = await prisma.transaction.findMany({ where:{ state:'WAIT_VALIDATION_EMAIL',createdAt:{lte:addDays(new Date(),-1)} }} );
 		if(fakeTransaction.length > 0){
@@ -37,70 +36,49 @@ export const consultFinishTransaction = async(prisma:any) => {
 			console.log('cccccwww55555');
 			const arrayPayments = await GetMultiTransaction( clientPayments(),TxMultiHash);
 
-			console.log('arrayPayments  ',arrayPayments);
+
 
 			for(const objTransaction of allIncompleteTransaction){
 
 				let objSplitHash = '';
-				console.log('cccccwwwsss');
-				console.log('objTransaction ',objTransaction.hash);
 				if( (objTransaction.hash).includes('cycle30') || (objTransaction.hash).includes('cycle60') || (objTransaction.hash).includes('cycle120') ){
 
 					const dateCycle = objTransaction.hash.split('_');
 					objSplitHash = dateCycle[1];
 
 				}
-				console.log('ss33324234s');
 				if(objTransaction.wallet == 'internal'){
 
 					continue;
 					console.log('ssssccccss');
 				}
-
-				console.log('sss22222');
 				if(arrayPayments[objSplitHash] != null){
-					console.log('sss22222');
-					if(arrayPayments[objSplitHash].status !=0 || objTransaction.id == 9){
 
-						if( objTransaction.id == 9){
-							console.log('sss');
-							prisma.transaction.update({
-								where:{id:objTransaction.id},
-								data:{state:'COMPLETE'}
+					if(arrayPayments[objSplitHash].status !=0 ){
+
+						
+						await prisma.transaction.update({
+							where:{id:objTransaction.id},
+							data:{
+								state:arrayPayments[objSplitHash].status == 1 ? 'COMPLETE' : 'CANCEL',
+								action:arrayPayments[objSplitHash].status == 1 ? 'INVEST' : 'DEPOSIT',
+							}
 	
-							}).then((result: any)=>{console.log(result);});
+						}).then((result: any)=>{console.log(result);});
+						
+						if (arrayPayments[objSplitHash].status == 1){
+
 							const cycleTurn ={
 								action:'INVEST',
-								valueUSD:parseInt(objTransaction.value),
+								valueUSD:Number(objTransaction.value),
 								valueBTC:objTransaction.valueBTC,
 								userId:objTransaction.userId,
 								hash:objTransaction.hash
 							};
-							
-							await prisma.cycle.create({data:cycleTurn})
-								.then((result: any)=>{console.log(result);})
-								.catch((error: any)=>{console.log(error);});
-
-						}else{
-							prisma.transaction.update({
-								where:{id:objTransaction.id},
-								data:{state:arrayPayments[objTransaction.hash].status == 1 ? 'COMPLETE' : 'CANCEL'}
-	
-							}).then((result: any)=>{console.log(result);});
-							const cycleTurn ={
-								action:'INVEST',
-								valueUSD:objTransaction.value,
-								valueBTC:objTransaction.valueBTC,
-								userId:objTransaction.userId,
-								hash:objTransaction.hash
-							};
-							
 							await prisma.cycle.create({data:cycleTurn})
 								.then((result: any)=>{console.log(result);})
 								.catch((error: any)=>{console.log(error);});
 						}
-						
-						
 					}
 				}
 			}

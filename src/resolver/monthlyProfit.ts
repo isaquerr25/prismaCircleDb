@@ -4,6 +4,7 @@ import { GraphState } from '../dto/utils';
 import { InputDeleteMonthlyProfit, InputMonthlyProfit, InputUpdateMonthlyProfit, MonthlyProfitAll } from '../dto/monthlyProfit';
 import { InputDeleteCycle } from '../dto/cycle';
 import { isManagerAuth } from '../middleware/isManagerAuth';
+import { addMonths } from 'date-fns';
 
 export const prisma = new PrismaClient();
 
@@ -27,6 +28,26 @@ export class MonthlyProfitResolver {
 	@Mutation(()=> [GraphState])
 	async createMonthlyProfit(@Arg('data', () => InputMonthlyProfit) data: InputMonthlyProfit){
 		const stateReturn = [];
+		
+
+		const firstDay = new Date(data.finishDate.getFullYear(), data.finishDate.getMonth(), 1);
+
+		const lastDay = new Date(data.finishDate.getFullYear(), data.finishDate.getMonth() + 1, 0);
+
+
+
+		const addDc = await prisma.monthlyProfit.findMany({ where:{ finishDate:{
+			gte: firstDay,
+			lt: lastDay,
+		}}});
+
+		if(addDc.length > 0){
+			stateReturn.push({
+				field: 'erro',
+				message: 'esse mes ja existe',
+			});
+			return stateReturn;
+		}
 		try {
 			const createUser = await prisma.monthlyProfit.create({data});
 			console.log(createUser);

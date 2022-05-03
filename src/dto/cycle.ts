@@ -11,15 +11,15 @@ export class CycleAll {
 		action?: string;
 	@Field(() => Int)
 		valueUSD?: number;
-	@Field(() => String)
+	@Field(() => String, { nullable: true })
 		valueBTC?: string;
 	@Field(() => Int, { nullable: true })
 		finalValueUSD?: number;
 	@Field(() => String, { nullable: true })
 		finalValueBTC?: BigInt;
-	@Field(() => String)
+	@Field(() => String, { nullable: true })
 		state?: string;
-	@Field(() => Date)
+	@Field(() => Date, { nullable: true })
 		beginDate?: Date;
 	@Field(() => Date, { nullable: true })
 		finishDate?: Date;
